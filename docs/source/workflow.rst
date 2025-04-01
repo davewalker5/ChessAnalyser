@@ -61,6 +61,7 @@ To report on the analysis for game that's been loaded and analysed, use the foll
     run.sh --black --reference "<unique-game-reference>" --engine <engine-name>
     run.sh --summary --reference "<unique-game-reference>" --engine <engine-name>
     run.sh --winchance --reference "<unique-game-reference>" --engine <engine-name>
+    run.sh --info --reference "<unique-game-reference>"
 
 Where:
 
@@ -69,6 +70,7 @@ Where:
 - "--black" tabulates the detailed per-move analysis for black
 - "--summary" provides a summary consisting of ACPL, accuracy and move annotations (dubious, mistake, blunder) for both players
 - "--winchance" tabulates the data used to generate a "Win%" chart [#1]_
+- "--info" tabulates the game headers, read from the PGN file
 
 Exporting Analysis Results
 --------------------------

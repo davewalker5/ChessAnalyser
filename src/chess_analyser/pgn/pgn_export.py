@@ -26,7 +26,7 @@ def export_pgn(options):
         raise ValueError(f"No moves found for the game with ID {game.id}")
 
     # Get the game headers
-    headers = load_game_information(options[OPT_REFERENCE], options[OPT_ENGINE], True, False)
+    headers = load_game_information(options[OPT_REFERENCE], True, None)
     # TODO: There are better ways to get this!
     result_list = [h[1] for h in headers if h[0] == "Result"]
     result = result_list[0] if result_list else "*"
