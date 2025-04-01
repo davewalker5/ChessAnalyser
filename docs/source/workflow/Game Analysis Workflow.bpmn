@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_10io2r6" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.0.0">
+  <bpmn:process id="Process_1ijpilb" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1">
+      <bpmn:outgoing>Flow_0oh3hfm</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:task id="Activity_03c8q4w" name="Load PGN File">
+      <bpmn:incoming>Flow_0oh3hfm</bpmn:incoming>
+      <bpmn:outgoing>Flow_1dsv6eq</bpmn:outgoing>
+      <bpmn:dataOutputAssociation id="DataOutputAssociation_0ac09vx">
+        <bpmn:targetRef>DataStoreReference_024q99c</bpmn:targetRef>
+      </bpmn:dataOutputAssociation>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="Flow_0oh3hfm" sourceRef="StartEvent_1" targetRef="Activity_03c8q4w" />
+    <bpmn:dataStoreReference id="DataStoreReference_024q99c" name="Stored Game" />
+    <bpmn:task id="Activity_0kwu0i4" name="Analyse Stored Game">
+      <bpmn:incoming>Flow_1dsv6eq</bpmn:incoming>
+      <bpmn:outgoing>Flow_1qd1l8b</bpmn:outgoing>
+      <bpmn:property id="Property_018okf8" name="__targetRef_placeholder" />
+      <bpmn:dataInputAssociation id="DataInputAssociation_1h1fr4t">
+        <bpmn:sourceRef>DataStoreReference_024q99c</bpmn:sourceRef>
+        <bpmn:targetRef>Property_018okf8</bpmn:targetRef>
+      </bpmn:dataInputAssociation>
+      <bpmn:dataOutputAssociation id="DataOutputAssociation_08fkcv3">
+        <bpmn:targetRef>DataStoreReference_07h8zfy</bpmn:targetRef>
+      </bpmn:dataOutputAssociation>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="Flow_1dsv6eq" sourceRef="Activity_03c8q4w" targetRef="Activity_0kwu0i4" />
+    <bpmn:dataStoreReference id="DataStoreReference_07h8zfy" name="Stored Analysis" />
+    <bpmn:task id="Activity_0ekhzet" name="Report on the Analysis">
+      <bpmn:incoming>Flow_1qd1l8b</bpmn:incoming>
+      <bpmn:outgoing>Flow_07tjc8q</bpmn:outgoing>
+      <bpmn:property id="Property_1b2d3cx" name="__targetRef_placeholder" />
+      <bpmn:dataInputAssociation id="DataInputAssociation_0o7y2nf">
+        <bpmn:sourceRef>DataStoreReference_07h8zfy</bpmn:sourceRef>
+        <bpmn:targetRef>Property_1b2d3cx</bpmn:targetRef>
+      </bpmn:dataInputAssociation>
+      <bpmn:dataOutputAssociation id="DataOutputAssociation_0qbsp66">
+        <bpmn:targetRef>DataObjectReference_0757rgj</bpmn:targetRef>
+      </bpmn:dataOutputAssociation>
+      <bpmn:dataOutputAssociation id="DataOutputAssociation_0w8oal5">
+        <bpmn:targetRef>DataObjectReference_0kepwdj</bpmn:targetRef>
+      </bpmn:dataOutputAssociation>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="Flow_1qd1l8b" sourceRef="Activity_0kwu0i4" targetRef="Activity_0ekhzet" />
+    <bpmn:dataObjectReference id="DataObjectReference_0757rgj" name="XSLX, DOCX and PGN files" dataObjectRef="DataObject_1wrm6kq" />
+    <bpmn:dataObject id="DataObject_1wrm6kq" />
+    <bpmn:sequenceFlow id="Flow_07tjc8q" sourceRef="Activity_0ekhzet" targetRef="Event_1rzzwyy" />
+    <bpmn:endEvent id="Event_1rzzwyy">
+      <bpmn:incoming>Flow_07tjc8q</bpmn:incoming>
+      <bpmn:terminateEventDefinition id="TerminateEventDefinition_1b5xx2r" />
+    </bpmn:endEvent>
+    <bpmn:dataObjectReference id="DataObjectReference_0kepwdj" name="Console Output" dataObjectRef="DataObject_06vmsk9" />
+    <bpmn:dataObject id="DataObject_06vmsk9" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1ijpilb">
+      <bpmndi:BPMNEdge id="Flow_0oh3hfm_di" bpmnElement="Flow_0oh3hfm">
+        <di:waypoint x="215" y="287" />
+        <di:waypoint x="270" y="287" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1dsv6eq_di" bpmnElement="Flow_1dsv6eq">
+        <di:waypoint x="370" y="287" />
+        <di:waypoint x="430" y="287" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1qd1l8b_di" bpmnElement="Flow_1qd1l8b">
+        <di:waypoint x="530" y="287" />
+        <di:waypoint x="590" y="287" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_07tjc8q_di" bpmnElement="Flow_07tjc8q">
+        <di:waypoint x="690" y="287" />
+        <di:waypoint x="752" y="287" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="179" y="269" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_03c8q4w_di" bpmnElement="Activity_03c8q4w">
+        <dc:Bounds x="270" y="247" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DataStoreReference_024q99c_di" bpmnElement="DataStoreReference_024q99c">
+        <dc:Bounds x="295" y="405" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="287" y="462" width="66" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0kwu0i4_di" bpmnElement="Activity_0kwu0i4">
+        <dc:Bounds x="430" y="247" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DataStoreReference_07h8zfy_di" bpmnElement="DataStoreReference_07h8zfy">
+        <dc:Bounds x="455" y="405" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="442" y="462" width="77" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0ekhzet_di" bpmnElement="Activity_0ekhzet">
+        <dc:Bounds x="590" y="247" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DataObjectReference_0757rgj_di" bpmnElement="DataObjectReference_0757rgj">
+        <dc:Bounds x="622" y="405" width="36" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="596" y="462" width="88" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0phv4lo_di" bpmnElement="Event_1rzzwyy">
+        <dc:Bounds x="752" y="269" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DataObjectReference_0kepwdj_di" bpmnElement="DataObjectReference_0kepwdj">
+        <dc:Bounds x="622" y="115" width="36" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="602" y="85" width="77" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="DataOutputAssociation_0ac09vx_di" bpmnElement="DataOutputAssociation_0ac09vx">
+        <di:waypoint x="320" y="327" />
+        <di:waypoint x="320" y="405" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DataInputAssociation_1h1fr4t_di" bpmnElement="DataInputAssociation_1h1fr4t">
+        <di:waypoint x="345" y="407" />
+        <di:waypoint x="434" y="325" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DataOutputAssociation_08fkcv3_di" bpmnElement="DataOutputAssociation_08fkcv3">
+        <di:waypoint x="480" y="327" />
+        <di:waypoint x="480" y="405" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DataOutputAssociation_0qbsp66_di" bpmnElement="DataOutputAssociation_0qbsp66">
+        <di:waypoint x="639" y="327" />
+        <di:waypoint x="638" y="405" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DataOutputAssociation_0w8oal5_di" bpmnElement="DataOutputAssociation_0w8oal5">
+        <di:waypoint x="641" y="247" />
+        <di:waypoint x="642" y="165" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DataInputAssociation_0o7y2nf_di" bpmnElement="DataInputAssociation_0o7y2nf">
+        <di:waypoint x="505" y="406" />
+        <di:waypoint x="593" y="324" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
