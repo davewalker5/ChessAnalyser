@@ -1,4 +1,5 @@
 from .constants import ANALYSIS_HEADERS, SUMMARY_HEADERS, WIN_CHANCE_HEADERS
+from .game_info import load_game_information
 from ..constants import OPT_ENGINE, OPT_REFERENCE, OPT_WHITE, OPT_BLACK, WHITE, BLACK
 from ..database.logic import load_analysis, get_analysis_engine_id, list_players
 from ..analysis.calculations import calculate_summary_statistics, calculate_win_chance_chart_data, extract_player_analysis
@@ -151,3 +152,15 @@ def tabulate_players():
         print_row(player, column_widths)
 
 
+def tabulate_game_info(options):
+    # Load the game information
+    info = load_game_information(options[OPT_REFERENCE], False, None)
+
+    # Write the table headers
+    column_widths = [20, 60]
+    headers = ["Item", "Value"]
+    print_row(headers, column_widths)
+
+    # Write the information
+    for i in info:
+        print_row(i, column_widths)

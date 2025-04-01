@@ -2,9 +2,13 @@ from ..database.logic import list_metadata_items, load_game
 from ..engines import load_engine_definitions, get_engine_display_name
 
 
-def load_game_information(identifier, engine, pgn_only, include_engine_name):
+def load_game_information(identifier, pgn_only, engine):
     """
     Load the game meta-data for a specified game
+
+    :param identifier: Game identifier - reference or ID
+    :param pgn_only: Only return headers that are part of the PGN specification
+    :param engine: Name of the engine - if not None, included in the headers
     """
     headers = []
 
@@ -15,7 +19,7 @@ def load_game_information(identifier, engine, pgn_only, include_engine_name):
     game = load_game(identifier)
     if game.meta_data:
         # Add the analysis engine to the game information, if required
-        if include_engine_name:
+        if engine:
             load_engine_definitions()
             engine_display_name = get_engine_display_name(engine)
             headers.append(["Analysis Engine", engine_display_name])

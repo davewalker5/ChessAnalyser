@@ -120,7 +120,7 @@ def write_analysis_document(options):
     run.add_picture(board_position_image)
 
     # Add the game information
-    info = load_game_information(options[OPT_REFERENCE], options[OPT_ENGINE], False, True)
+    info = load_game_information(options[OPT_REFERENCE], False, options[OPT_ENGINE])
     if info:
         document.add_heading(f"Game Information", level=1)
         add_table_to_analysis_document(document, ["Item", "Value"], info)

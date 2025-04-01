@@ -106,7 +106,7 @@ def write_analysis_spreadsheet(options):
     chart_table = [[i + 1, x] for i, x in enumerate(chart_data)]
 
     # Get the game information
-    info = load_game_information(options[OPT_REFERENCE], options[OPT_ENGINE], False, True)
+    info = load_game_information(options[OPT_REFERENCE], False, options[OPT_ENGINE])
 
     # Create a new Excel workbook to hold the analysis details
     workbook = create_workbook(options[OPT_XLSX])
