@@ -1,10 +1,11 @@
 import argparse
 from ..reporting import tabulate_analysis, tabulate_summary, tabulate_win_chance, \
-    write_analysis_spreadsheet, write_analysis_document, tabulate_players, tabulate_game_info
+    write_analysis_spreadsheet, write_analysis_document, tabulate_players, \
+    tabulate_game_info, tabulate_games, search_metadata
 from ..analysis.analysis import analyse_game
 from ..constants import PROGRAM_NAME, PROGRAM_DESCRIPTION, PROGRAM_VERSION, OPT_LOAD, OPT_ANALYSE, \
     OPT_RESULTS, OPT_WHITE, OPT_BLACK, OPT_SUMMARY, OPT_WIN_CHANCE, OPT_EXPORT, OPT_PLAYERS, OPT_INFO, \
-    OPT_ENGINE, OPT_PGN, OPT_REFERENCE, OPT_VERBOSE, OPT_XLSX, OPT_DOCX
+    OPT_SEARCH, OPT_ENGINE, OPT_PGN, OPT_REFERENCE, OPT_VERBOSE, OPT_XLSX, OPT_DOCX
 from ..pgn import import_pgn, export_pgn
 
 
@@ -30,6 +31,7 @@ def configure_parser():
     parser.add_argument("-ex", "--export", action="store_true", help="Export analysis results")
     parser.add_argument("-pl", "--players", action="store_true", help="Print a table of players on the console")
     parser.add_argument("-i", "--info", action="store_true", help="Print a table of game information")
+    parser.add_argument("-se", "--search", nargs=1, help="Search metadata and print a table of matching games")
 
     # Values
     parser.add_argument("-p", "--pgn", nargs=1, help="Path to PGN file holding the game to analysis")
@@ -66,6 +68,7 @@ def parse_command_line():
         OPT_EXPORT: args.export,
         OPT_PLAYERS: args.players,
         OPT_INFO: args.info,
+        OPT_SEARCH: args.search[0] if args.search else None,
 
         # Values
         OPT_ENGINE: args.engine[0] if args.engine else None,
@@ -135,6 +138,8 @@ def dispatch_command_line(options):
             import_pgn(options)
         elif options[OPT_EXPORT]:
             dispatch_export(options)
+        elif options[OPT_SEARCH]:
+            search_metadata(options[OPT_SEARCH])
         else:
             dispatch_report(options)
 

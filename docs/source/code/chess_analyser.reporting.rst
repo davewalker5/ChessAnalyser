@@ -44,6 +44,14 @@ chess\_analyser.reporting.images module
    :show-inheritance:
    :undoc-members:
 
+chess\_analyser.reporting.search module
+---------------------------------------
+
+.. automodule:: chess_analyser.reporting.search
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 chess\_analyser.reporting.spreadsheet module
 --------------------------------------------
 
