@@ -27,8 +27,8 @@ algorithms from Lichess [#2]_ and En Croissant [#3]_ to the per-move analysis re
    database
    workflow
    metadata_search
+   data_management
    scoring
-   schema
    cli
    code/modules
 

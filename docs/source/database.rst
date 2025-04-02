@@ -2,7 +2,7 @@ Database Configuration
 ======================
 
 .. note::
-    The analyser includes an "alembic" script at the top of the project folder structure. This sets up
+    The analyser includes an "alembic.sh" script at the top of the project folder structure. This sets up
     the Virtual Environment and creates a new "chess.db" database in the "data" sub-folder or apply
     the latest updates to the copy of the database in that folder. This simplifies managing the database
     so it's recommended, though not mandatory, to use it. This document assumes it is being used.
@@ -102,6 +102,3 @@ Alembic should run and report any updates applied to the database file.
 
 Assuming all is well and no errors are produced, the file "data/chess.db" can be copied back to the live
 database location and renamed accordingly.
-
-
-.. [#1] `Alembic <https://alembic.sqlalchemy.org/en/latest/>`_

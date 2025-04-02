@@ -1,7 +1,7 @@
 # Version Information
 PROGRAM_NAME = "Chess Analyser"
 PROGRAM_DESCRIPTION = "Game analysis using UCI engines"
-PROGRAM_VERSION = "1.3.0"
+PROGRAM_VERSION = "1.4.0"
 
 # Members of the analysis options dictionary
 OPT_LOAD = "load"
@@ -15,6 +15,7 @@ OPT_EXPORT = "export"
 OPT_PLAYERS = "players"
 OPT_INFO = "info"
 OPT_SEARCH = "search"
+OPT_DELETE = "delete"
 
 OPT_ENGINE = "engine"
 OPT_PGN = "pgn"
