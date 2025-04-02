@@ -154,7 +154,7 @@ def tabulate_players():
 
 def tabulate_game_info(options):
     # Load the game information
-    info = load_game_information(options[OPT_REFERENCE], False, None)
+    info = load_game_information(options[OPT_REFERENCE], False, None, True)
 
     # Write the table headers
     column_widths = [20, 60]
