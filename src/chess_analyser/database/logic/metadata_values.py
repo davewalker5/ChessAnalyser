@@ -2,7 +2,7 @@
 Metadata value database logic
 """
 
-from ..models import Session, MetaDataValue
+from ..models import Session, MetaDataValue, Game
 
 
 def create_metadata_value(metadata_item_id, game_id, value):
@@ -36,3 +36,22 @@ def search_metadata_values(search_term):
         results = set(m.game_id for m in matches)
 
     return results
+
+
+def delete_metadata_values(game_id):
+    """
+    Delete all the metadata value records for a game
+
+    :param game_id: ID of the game to delete metadata from
+    """
+
+    with Session.begin() as session:
+        # Retrieve the game - the navigation/relationship properties will ensure this loads the moves and,
+        # with them, their analyses
+        game = session.query(Game).get(game_id)
+
+        # Get a list of metadata value IDs
+        metadata_value_ids = [v.id for v in game.meta_data]
+
+        # Delete them all
+        session.query(MetaDataValue).filter(MetaDataValue.id.in_(metadata_value_ids)).delete(synchronize_session=False)

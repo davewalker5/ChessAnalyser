@@ -11,6 +11,7 @@ Subpackages
    chess_analyser.constants
    chess_analyser.database
    chess_analyser.engines
+   chess_analyser.management
    chess_analyser.pgn
    chess_analyser.reporting
 

@@ -5,8 +5,9 @@ from ..reporting import tabulate_analysis, tabulate_summary, tabulate_win_chance
 from ..analysis.analysis import analyse_game
 from ..constants import PROGRAM_NAME, PROGRAM_DESCRIPTION, PROGRAM_VERSION, OPT_LOAD, OPT_ANALYSE, \
     OPT_RESULTS, OPT_WHITE, OPT_BLACK, OPT_SUMMARY, OPT_WIN_CHANCE, OPT_EXPORT, OPT_PLAYERS, OPT_INFO, \
-    OPT_SEARCH, OPT_ENGINE, OPT_PGN, OPT_REFERENCE, OPT_VERBOSE, OPT_XLSX, OPT_DOCX
+    OPT_SEARCH, OPT_DELETE, OPT_ENGINE, OPT_PGN, OPT_REFERENCE, OPT_VERBOSE, OPT_XLSX, OPT_DOCX
 from ..pgn import import_pgn, export_pgn
+from ..management import GAME, ANALYSIS, delete_data
 
 
 def configure_parser():
@@ -32,6 +33,7 @@ def configure_parser():
     parser.add_argument("-pl", "--players", action="store_true", help="Print a table of players on the console")
     parser.add_argument("-i", "--info", action="store_true", help="Print a table of game information")
     parser.add_argument("-se", "--search", nargs="+", help="Search metadata and print a table of matching games")
+    parser.add_argument("-de", "--delete", action="store_true", help="Delete the analysis for a game and engine or all data for a game")
 
     # Values
     parser.add_argument("-p", "--pgn", nargs=1, help="Path to PGN file holding the game to analysis")
@@ -69,6 +71,7 @@ def parse_command_line():
         OPT_PLAYERS: args.players,
         OPT_INFO: args.info,
         OPT_SEARCH: args.search,
+        OPT_DELETE: args.delete,
 
         # Values
         OPT_ENGINE: args.engine[0] if args.engine else None,
@@ -124,6 +127,35 @@ def dispatch_export(options):
         export_pgn(options)
 
 
+def confirm(targets):
+    # Initialise the valid inputs and the confirmed response
+    confirmed = "y"
+    valid_inputs = [confirmed, "Y", "n", "N"]
+
+    # Loop until the user provides a valid response
+    response = None
+    prompt = f"Are you sure you want to delete {targets}? [{'/'.join(valid_inputs)}] "
+    while not response in valid_inputs:
+        # Prompt for confirmation
+        response = input(prompt)
+        if response in valid_inputs:
+            return response == confirmed
+
+
+def dispatch_delete(options):
+    # The game reference must be specified. If the engine is also specified, just
+    # delete the analysis of that game for that engine. Otherwise, delete everything
+    # related to the game
+    if  options[OPT_ENGINE]:
+        confirmed = confirm(f"the analysis of game {options[OPT_REFERENCE]} for engine {options[OPT_ENGINE]}")
+        if confirmed:
+            delete_data(options[OPT_REFERENCE], ANALYSIS, options[OPT_ENGINE])
+    else:
+        confirmed = confirm(f"all data relating to game {options[OPT_REFERENCE]}")
+        if confirmed:
+            delete_data(options[OPT_REFERENCE], GAME, None)
+
+
 def dispatch_command_line(options):
     """
     Dispatch requested command line options
@@ -133,13 +165,15 @@ def dispatch_command_line(options):
 
     try:
         if options[OPT_ANALYSE]:
-                analyse_game(options)
+            analyse_game(options)
         elif options[OPT_LOAD]:
             import_pgn(options)
         elif options[OPT_EXPORT]:
             dispatch_export(options)
         elif options[OPT_SEARCH]:
             search_metadata(options[OPT_SEARCH])
+        elif options[OPT_DELETE]:
+            dispatch_delete(options)
         else:
             dispatch_report(options)
 

@@ -51,7 +51,7 @@ def delete_analysis(game_id, analysis_engine_id):
     """
     Delete all analysis records for a game and engine
 
-    :param game_id: ID of the game to return analyses for
+    :param game_id: ID of the game to delete analyses for
     :param analysis_engine_id: ID for the engine that performed the analysis
     """
 
@@ -63,9 +63,16 @@ def delete_analysis(game_id, analysis_engine_id):
 
             # Iterate over the moves
             for move in game.moves:
-                # Iterate over the analyses for the engine in question, deleting each one
-                for analysis in [a for a in move.analyses if a.analysis_engine_id == analysis_engine_id]:
-                    session.delete(analysis)
+                # Get the IDs for the analyses : If the engine's specified, limit to that engine. If not, get
+                # them all
+                if analysis_engine_id:
+                    analysis_ids = [a.id for a in move.analyses if a.analysis_engine_id == analysis_engine_id]
+                else:
+                    analysis_ids = [a.id for a in move.analyses]
+
+                # Delete the matching analyses
+                session.query(Analysis).filter(Analysis.id.in_(analysis_ids)).delete(synchronize_session=False)
+
 
         except:
             pass
@@ -89,11 +96,12 @@ def load_analysis(identifier, analysis_engine_id):
     analysis = []
     for i, move in enumerate(game.moves):
         # Get the analysis for this move for the specified engine
-        move_analysis = [a for a in move.analyses if a.analysis_engine_id == analysis_engine_id][0]
+        move_analysis = [a for a in move.analyses if a.analysis_engine_id == analysis_engine_id]
         if not move_analysis:
             raise ValueError(f"Analysis for game {identifier} using engine {analysis_engine_id} not found")
 
         # Construct a combined move and analysis row for this move and add it to the list
+        move_analysis = move_analysis[0]
         analysis.append([
             1 + i // 2,
             1 + i,

@@ -67,3 +67,13 @@ def load_games(game_ids):
         games = session.query(Game).filter(Game.id.in_(game_ids)).options(noload(Game.moves)).all()
 
     return games
+
+
+def delete_game(game_id):
+    """
+    Delete a game given its ID
+
+    :param game_id: ID of the game to delete
+    """
+    with Session.begin() as session:
+        session.query(Game).filter(Game.id == game_id).delete()
