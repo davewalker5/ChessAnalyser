@@ -39,6 +39,20 @@ def print_row(values, column_widths):
     print("|")
 
 
+def print_separator(column_widths):
+    """
+    Print the separator between header and table body
+
+    :param column_widths: List of column widths
+    """
+    row = ["+"]
+    for width in column_widths:
+        row.append("-" * (2 + width))
+        row.append("+")
+
+    print("".join(row))
+
+
 def tabulate_data(data, headers, column_widths):
     """
     Tabulate a collection of row data lists in the current window
@@ -47,8 +61,8 @@ def tabulate_data(data, headers, column_widths):
     :param headers: List of column headers
     :param column_widths: List of column widths
     """
-    print()
     print_row(headers, column_widths)
+    print_separator(column_widths)
     for row_data in data:
         print_row(row_data, column_widths)
 
@@ -58,6 +72,7 @@ def print_analysis_table_headers():
     Print the headers for the analysis table on the console
     """
     print_row(ANALYSIS_HEADERS, ANALYSIS_COLUMN_WIDTHS)
+    print_separator(ANALYSIS_COLUMN_WIDTHS)
 
 
 def print_analysis_table_row(row_data):
@@ -108,9 +123,7 @@ def tabulate_summary(options):
     summary_statistics = calculate_summary_statistics(analysis)
 
     # Print the results
-    print_row(SUMMARY_HEADERS, SUMMARY_COLUMN_WIDTHS)
-    for row in summary_statistics:
-        print_row(row, SUMMARY_COLUMN_WIDTHS)
+    tabulate_data(summary_statistics, SUMMARY_HEADERS, SUMMARY_COLUMN_WIDTHS)
 
 
 def tabulate_win_chance(options):
@@ -128,9 +141,8 @@ def tabulate_win_chance(options):
     win_chance_data = calculate_win_chance_chart_data(analysis)
 
     # Print the results
-    print_row(WIN_CHANCE_HEADERS, WIN_CHANCE_COLUMN_WIDTHS)
-    for i, chance in enumerate(win_chance_data):
-        print_row([i + 1, chance], WIN_CHANCE_COLUMN_WIDTHS)
+    data = [[i, chance] for i, chance in enumerate(win_chance_data)]
+    tabulate_data(data, WIN_CHANCE_HEADERS, WIN_CHANCE_COLUMN_WIDTHS)
 
 
 def tabulate_players():
@@ -142,25 +154,21 @@ def tabulate_players():
     players = list_players()
     player_data = [[p.id, p.name[:60], p.elo, p.ai] for p in players]
 
-    # Write the headers
+    # Define the headers
     column_widths = [6, 62, 6, 8]
     headers = ["Id", "Name", "ELO", "AI"]
-    print_row(headers, column_widths)
 
-    # Write the player data
-    for player in player_data:
-        print_row(player, column_widths)
+    # Print the table
+    tabulate_data(player_data, headers, column_widths)
 
 
 def tabulate_game_info(options):
     # Load the game information
     info = load_game_information(options[OPT_REFERENCE], False, None, True)
 
-    # Write the table headers
+    # Define the table headers
     column_widths = [20, 60]
     headers = ["Item", "Value"]
-    print_row(headers, column_widths)
 
-    # Write the information
-    for i in info:
-        print_row(i, column_widths)
+    # Print the table
+    tabulate_data(info, headers, column_widths)
