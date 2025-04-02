@@ -28,7 +28,7 @@ def search_metadata_values(search_term):
     the IDs for the parent games
 
     :param search_term: Text to look for
-    :return:
+    :return: Set of matching game IDs
     """
     with Session.begin() as session:
         match_string = f"%{search_term}%"

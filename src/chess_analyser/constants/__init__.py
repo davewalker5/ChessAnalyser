@@ -14,6 +14,7 @@ OPT_WIN_CHANCE = "winchance"
 OPT_EXPORT = "export"
 OPT_PLAYERS = "players"
 OPT_INFO = "info"
+OPT_SEARCH = "search"
 
 OPT_ENGINE = "engine"
 OPT_PGN = "pgn"

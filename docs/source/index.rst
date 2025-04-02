@@ -26,6 +26,7 @@ algorithms from Lichess [#2]_ and En Croissant [#3]_ to the per-move analysis re
    engines
    database
    workflow
+   metadata_search
    scoring
    schema
    cli
