@@ -4,6 +4,7 @@ Game database logic
 
 from ..models import Session, Game
 from functools import singledispatch
+from sqlalchemy.orm import noload
 
 
 def create_game(reference, white_player_id, black_player_id):
@@ -56,12 +57,13 @@ def _(id):
 
 def load_games(game_ids):
     """
-    Return all the games with IDs in the provided list
+    Return all the games with IDs in the provided list. Note that while metadata is loaded
+    the moves and associated analyses are not
 
     :param game_ids: List of game IDs
     :return: A list of games matching the specified IDs
     """
     with Session.begin() as session:
-        games = session.query(Game).filter(Game.id.in_(game_ids)).all()
+        games = session.query(Game).filter(Game.id.in_(game_ids)).options(noload(Game.moves)).all()
 
     return games
