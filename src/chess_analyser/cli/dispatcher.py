@@ -31,7 +31,7 @@ def configure_parser():
     parser.add_argument("-ex", "--export", action="store_true", help="Export analysis results")
     parser.add_argument("-pl", "--players", action="store_true", help="Print a table of players on the console")
     parser.add_argument("-i", "--info", action="store_true", help="Print a table of game information")
-    parser.add_argument("-se", "--search", nargs=1, help="Search metadata and print a table of matching games")
+    parser.add_argument("-se", "--search", nargs="+", help="Search metadata and print a table of matching games")
 
     # Values
     parser.add_argument("-p", "--pgn", nargs=1, help="Path to PGN file holding the game to analysis")
@@ -68,7 +68,7 @@ def parse_command_line():
         OPT_EXPORT: args.export,
         OPT_PLAYERS: args.players,
         OPT_INFO: args.info,
-        OPT_SEARCH: args.search[0] if args.search else None,
+        OPT_SEARCH: args.search,
 
         # Values
         OPT_ENGINE: args.engine[0] if args.engine else None,
