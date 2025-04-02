@@ -24,4 +24,5 @@ def search_metadata(search_terms):
         games = load_games(game_ids)
         tabulate_games(games)
     else:
-        print(f"No games matched the search terms '{", ".join(search_terms)}'")
+        terms = ", ".join(search_terms)
+        print(f"No games matched the search terms '{terms}'")
