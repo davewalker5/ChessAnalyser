@@ -20,3 +20,19 @@ def create_metadata_value(metadata_item_id, game_id, value):
         session.add(metadata_value)
 
     return metadata_value
+
+
+def search_metadata_values(search_term):
+    """
+    Search the metadata for values matching the specified search term and return
+    the IDs for the parent games
+
+    :param search_term: Text to look for
+    :return:
+    """
+    with Session.begin() as session:
+        match_string = f"%{search_term}%"
+        matches = session.query(MetaDataValue).filter(MetaDataValue.value.ilike(match_string))
+        results = set(m.game_id for m in matches)
+
+    return results
