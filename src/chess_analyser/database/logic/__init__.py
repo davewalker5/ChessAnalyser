@@ -1,5 +1,5 @@
 from .players import create_player, get_player, list_players
-from .games import create_game, load_game
+from .games import create_game, load_game, load_games
 from .metadata_items import list_metadata_items
 from .metadata_values import create_metadata_value, search_metadata_values
 from .moves import create_move

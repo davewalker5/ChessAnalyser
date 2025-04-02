@@ -52,3 +52,16 @@ def _(id):
         game = session.query(Game).get(id)
 
     return game
+
+
+def load_games(game_ids):
+    """
+    Return all the games with IDs in the provided list
+
+    :param game_ids: List of game IDs
+    :return: A list of games matching the specified IDs
+    """
+    with Session.begin() as session:
+        games = session.query(Game).filter(Game.id.in_(game_ids)).all()
+
+    return games
