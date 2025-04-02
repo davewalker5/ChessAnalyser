@@ -1,7 +1,7 @@
 # Version Information
 PROGRAM_NAME = "Chess Analyser"
-PROGRAM_DESCRIPTION = "Game analysis using UCI engines via python-chess"
-PROGRAM_VERSION = "1.0.0"
+PROGRAM_DESCRIPTION = "Game analysis using UCI engines"
+PROGRAM_VERSION = "1.3.0"
 
 # Members of the analysis options dictionary
 OPT_LOAD = "load"
