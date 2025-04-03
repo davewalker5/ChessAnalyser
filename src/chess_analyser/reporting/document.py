@@ -1,8 +1,8 @@
 from ..constants import WHITE, BLACK, OPT_ENGINE, OPT_REFERENCE, OPT_DOCX
 from ..database.logic import load_analysis, get_analysis_engine_id, MOVE_INDEX, SAN_INDEX, ANNOTATION_INDEX, \
     EVALUATION_INDEX, CP_LOSS_INDEX, WIN_PERCENT_INDEX, ACCURACY_INDEX
-from .constants import ANALYSIS_HEADERS, SUMMARY_HEADERS, WIN_CHANCE_HEADERS
-from ..analysis.calculations import calculate_win_chance_chart_data, calculate_summary_statistics, extract_player_analysis
+from .constants import ANALYSIS_HEADERS, SUMMARY_HEADERS
+from ..analysis.calculations import calculate_summary_statistics, extract_player_analysis
 from .images import write_board_position_image, write_win_percent_chart_image
 from .game_info import load_game_information
 from docx import Document
