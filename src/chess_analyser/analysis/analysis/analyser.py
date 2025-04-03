@@ -59,7 +59,7 @@ class _suppress_stdout_stderr(object):
 
 def store_analysis(game_id, engine_name, analysis):
     # Get the engine ID and delete any previous analysis for this game and engine
-    engine_id = get_analysis_engine_id(engine_name)
+    engine_id = get_analysis_engine_id(engine_name, True)
     delete_analysis(game_id, engine_id)
 
     # Save the analysis records

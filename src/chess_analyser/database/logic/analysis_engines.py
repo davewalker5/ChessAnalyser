@@ -51,15 +51,19 @@ def _(id):
     return analysis_engine
 
 
-def get_analysis_engine_id(name):
+def get_analysis_engine_id(name, create_if_not_found=False):
     """
-    Retrieve a named analysis engine. If they don't exist, create them with default properties
+    Retrieve a named analysis engine
 
     :param name: Analysis engine name
+    :param create_if_not_found: If True, the engine will be created if it doesn't already exist
     :return: Analysis engine ID
     """
     analysis_engine = get_analysis_engine(name)
     if not analysis_engine:
-        analysis_engine = create_analysis_engine(name)
+        if create_if_not_found:
+            analysis_engine = create_analysis_engine(name)
+        else:
+            raise ValueError(f"Engine '{name}' does not exist")
 
     return analysis_engine.id
