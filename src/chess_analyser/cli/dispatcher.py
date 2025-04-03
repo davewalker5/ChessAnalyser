@@ -1,11 +1,11 @@
 import argparse
 from ..reporting import tabulate_analysis, tabulate_summary, tabulate_win_chance, \
     write_analysis_spreadsheet, write_analysis_document, tabulate_players, \
-    tabulate_game_info, tabulate_games, search_metadata
+    tabulate_game_info, search_metadata
 from ..analysis.analysis import analyse_game
 from ..constants import PROGRAM_NAME, PROGRAM_DESCRIPTION, PROGRAM_VERSION, OPT_LOAD, OPT_ANALYSE, \
     OPT_RESULTS, OPT_WHITE, OPT_BLACK, OPT_SUMMARY, OPT_WIN_CHANCE, OPT_EXPORT, OPT_PLAYERS, OPT_INFO, \
-    OPT_SEARCH, OPT_DELETE, OPT_ENGINE, OPT_PGN, OPT_REFERENCE, OPT_VERBOSE, OPT_XLSX, OPT_DOCX
+    OPT_SEARCH, OPT_DELETE, OPT_VERSION, OPT_ENGINE, OPT_PGN, OPT_REFERENCE, OPT_VERBOSE, OPT_XLSX, OPT_DOCX
 from ..pgn import import_pgn, export_pgn
 from ..management import GAME, ANALYSIS, delete_data
 
@@ -22,6 +22,7 @@ def configure_parser():
     )
 
     # Main actions
+    parser.add_argument("-ve", "--version", action="store_true", help="Report the application version and exit")
     parser.add_argument("-l", "--load", action="store_true", help="Load a PGN file into the database")
     parser.add_argument("-a", "--analyse", action="store_true", help="Analyse a game using the specified engine")
     parser.add_argument("-r", "--results", action="store_true", help="Print detailed analysis results on the console")
@@ -43,7 +44,7 @@ def configure_parser():
     parser.add_argument("-d", "--docx", nargs=1, help="Path to a Word document to export to")
 
     # Flags
-    parser.add_argument("-v", "--verbose", action="store_true", help="Write analysis details to the console during analysis")
+    parser.add_argument("-vb", "--verbose", action="store_true", help="Write analysis details to the console during analysis")
 
     return parser
 
@@ -72,6 +73,7 @@ def parse_command_line():
         OPT_INFO: args.info,
         OPT_SEARCH: args.search,
         OPT_DELETE: args.delete,
+        OPT_VERSION: args.version,
 
         # Values
         OPT_ENGINE: args.engine[0] if args.engine else None,
@@ -164,7 +166,9 @@ def dispatch_command_line(options):
     """
 
     try:
-        if options[OPT_ANALYSE]:
+        if options[OPT_VERSION]:
+            print(f"{PROGRAM_NAME} v{PROGRAM_VERSION}")
+        elif options[OPT_ANALYSE]:
             analyse_game(options)
         elif options[OPT_LOAD]:
             import_pgn(options)

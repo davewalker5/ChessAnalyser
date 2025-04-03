@@ -50,7 +50,7 @@ def export_pgn(options):
         for header in headers:
             file.write(f"[{header[0]} \"{header[1]}\"]\n")
 
-        file.write("\n\n")
+        file.write("\n")
 
         # The first evaluation is for the position before white's first move, and is written at the
         # head of the move list
