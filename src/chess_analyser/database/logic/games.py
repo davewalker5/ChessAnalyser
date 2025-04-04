@@ -4,7 +4,7 @@ Game database logic
 
 from ..models import Session, Game
 from functools import singledispatch
-from sqlalchemy.orm import noload
+from sqlalchemy.orm import noload, aliased
 
 
 def create_game(reference, white_player_id, black_player_id):
@@ -64,7 +64,11 @@ def load_games(game_ids):
     :return: A list of games matching the specified IDs
     """
     with Session.begin() as session:
-        games = session.query(Game).filter(Game.id.in_(game_ids)).options(noload(Game.moves)).all()
+        games = session.query(Game) \
+                        .filter(Game.id.in_(game_ids)) \
+                        .order_by(Game.reference.asc()) \
+                        .options(noload(Game.moves)) \
+                        .all()
 
     return games
 
