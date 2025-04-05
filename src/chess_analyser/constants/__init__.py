@@ -1,7 +1,7 @@
 # Version Information
 PROGRAM_NAME = "Chess Analyser"
 PROGRAM_DESCRIPTION = "Game analysis using UCI engines"
-PROGRAM_VERSION = "1.6.0"
+PROGRAM_VERSION = "1.7.0"
 
 # Members of the analysis options dictionary
 OPT_LOAD = "load"
@@ -23,6 +23,8 @@ OPT_PGN = "pgn"
 OPT_REFERENCE = "reference"
 OPT_XLSX = "xlsx"
 OPT_DOCX = "docx"
+OPT_IMAGE = "image"
+OPT_HALFMOVES = "halfmoves"
 
 OPT_VERBOSE = "verbose"
 

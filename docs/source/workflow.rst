@@ -91,5 +91,18 @@ If required, multiple outputs can be specified in a single export command:
 
 This command exports the analysis in both XLSX and DOCX format and writes the annotated PGN file.
 
+Exporting Images of the Board
+-----------------------------
+
+To export a PNG format image of the board position for a game that's been loaded, but not necessarily analysed, use the following options:
+
+.. code-block:: bash
+
+    run.sh --export --reference "<unique-game-reference>" --image "<image-file-path>" --halfmoves <halfmoves>
+
+
+"<halfmoves>" indicates the number of halfmoves to fast-forward by before exporting the image. It may also have the value "*" to fast-forward
+to the end of the game and export the final position.
+
 
 .. [#1] `Lichess win% calculation <https://lichess.org/page/accuracy>`_

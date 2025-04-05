@@ -1,11 +1,12 @@
 import argparse
 from ..reporting import tabulate_analysis, tabulate_summary, tabulate_win_chance, \
     write_analysis_spreadsheet, write_analysis_document, tabulate_players, \
-    tabulate_game_info, search_metadata
+    tabulate_game_info, search_metadata, write_board_position_image
 from ..analysis.analysis import analyse_game
 from ..constants import PROGRAM_NAME, PROGRAM_DESCRIPTION, PROGRAM_VERSION, OPT_LOAD, OPT_ANALYSE, \
     OPT_RESULTS, OPT_WHITE, OPT_BLACK, OPT_SUMMARY, OPT_WIN_CHANCE, OPT_EXPORT, OPT_PLAYERS, OPT_INFO, \
-    OPT_SEARCH, OPT_DELETE, OPT_VERSION, OPT_ENGINE, OPT_PGN, OPT_REFERENCE, OPT_VERBOSE, OPT_XLSX, OPT_DOCX
+    OPT_SEARCH, OPT_DELETE, OPT_VERSION, OPT_ENGINE, OPT_PGN, OPT_REFERENCE, OPT_IMAGE, \
+    OPT_VERBOSE, OPT_XLSX, OPT_DOCX, OPT_HALFMOVES
 from ..pgn import import_pgn, export_pgn
 from ..management import GAME, ANALYSIS, delete_data
 
@@ -42,6 +43,8 @@ def configure_parser():
     parser.add_argument("-ref", "--reference", nargs=1, help="Reference for an imported game")
     parser.add_argument("-x", "--xlsx", nargs=1, help="Path to an XLSX file to export to")
     parser.add_argument("-d", "--docx", nargs=1, help="Path to a Word document to export to")
+    parser.add_argument("-im", "--image", nargs=1, help="Path to ain image file (PGN format) to export to")
+    parser.add_argument("-hm", "--halfmoves", nargs=1, help="Halfmove number to export at")
 
     # Flags
     parser.add_argument("-vb", "--verbose", action="store_true", help="Write analysis details to the console during analysis")
@@ -81,6 +84,8 @@ def parse_command_line():
         OPT_REFERENCE: args.reference[0]if args.reference else None,
         OPT_XLSX: args.xlsx[0] if args.xlsx else None,
         OPT_DOCX: args.docx[0] if args.docx else None,
+        OPT_IMAGE: args.image[0] if args.image else None,
+        OPT_HALFMOVES: int(args.halfmoves[0]) if args.halfmoves else None,
 
         # Flags
         OPT_VERBOSE: args.verbose
@@ -127,6 +132,9 @@ def dispatch_export(options):
 
     if options[OPT_PGN]:
         export_pgn(options)
+
+    if options[OPT_IMAGE]:
+        write_board_position_image(options[OPT_REFERENCE], options[OPT_HALFMOVES], options[OPT_IMAGE])
 
 
 def confirm(targets):
