@@ -1,4 +1,4 @@
-from .database import create_database, Engine, Session
+from .database import create_database, Engine, Session, get_data_path
 from .player import Player
 from .game import Game
 from .move import Move
