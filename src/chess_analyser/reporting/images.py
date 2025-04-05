@@ -1,4 +1,5 @@
 from cairosvg import svg2png
+import chess
 import chess.svg
 from ..analysis.calculations import calculate_win_chance_chart_data
 from ..database.logic import load_game
@@ -7,7 +8,7 @@ import os
 import pandas as pd
 
 
-def _fast_forward_game(board, moves, halfmoves):
+def fast_forward_game(board, moves, halfmoves):
     """
     Fast forward a game to the point at which a number of halfmoves have been completed
 
@@ -32,13 +33,28 @@ def _fast_forward_game(board, moves, halfmoves):
             return
 
 
-def write_board_position_image(identifier, halfmoves, filename):
+def export_current_position_image(board, filename):
+    """
+    Export a PNG image of the current position of the specified board
+
+    :param board: python-chess board object
+    :param filename: Optional filename to export to, or None
+    :return: Actual filename written
+    """
+    image_file_path = filename if filename else f"board-position-{os.getpid()}.png"
+    svg_image = chess.svg.board(board=board)
+    svg2png(bytestring=svg_image, write_to=image_file_path)
+    return image_file_path
+
+
+def export_board_image_after_halfmoves(identifier, halfmoves, filename):
     """
     Generate a PNG image of the final state of the board for a game
 
     :param identifier: Game identifier
     :param halfmoves: Fast-forward by this number of halfmoves before exporting
-    :param fiename: Optional output filename
+    :param fiename: Optional filename to export to, or None
+    :return: Actual filename written
     """
     # Load the game
     game = load_game(identifier)
@@ -49,18 +65,16 @@ def write_board_position_image(identifier, halfmoves, filename):
     if not game.moves:
         raise ValueError(f"No moves found for the game with ID {game.id}")
 
-    # Fast forward to the specified point in the game. A value of -1
+    # Fast forward to the specified point in the game
     board = chess.Board()
     _fast_forward_game(board, game.moves, halfmoves)
 
     # Now create an SVG image from the board in that position and convert to PNG
-    image_file_path = filename if filename else f"board-position-{os.getpid()}.png"
-    svg_image = chess.svg.board(board=board)
-    svg2png(bytestring=svg_image, write_to=image_file_path)
+    image_file_path = export_current_position_image(board, filename)
     return image_file_path
 
 
-def write_win_percent_chart_image(analysis):
+def export_win_percent_chart_image(analysis):
     """
     Generate a PNG image containing the win percent chart
 

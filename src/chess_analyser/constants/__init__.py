@@ -25,6 +25,8 @@ OPT_XLSX = "xlsx"
 OPT_DOCX = "docx"
 OPT_IMAGE = "image"
 OPT_HALFMOVES = "halfmoves"
+OPT_MOVIE = "movie"
+OPT_DURATION = "duration"
 
 OPT_VERBOSE = "verbose"
 

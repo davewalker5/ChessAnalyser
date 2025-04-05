@@ -3,7 +3,7 @@ from ..database.logic import load_analysis, get_analysis_engine_id, MOVE_INDEX, 
     EVALUATION_INDEX, CP_LOSS_INDEX, WIN_PERCENT_INDEX, ACCURACY_INDEX
 from .constants import ANALYSIS_HEADERS, SUMMARY_HEADERS
 from ..analysis.calculations import calculate_summary_statistics, extract_player_analysis
-from .images import write_board_position_image, write_win_percent_chart_image
+from .images import export_board_image_after_halfmoves, export_win_percent_chart_image
 from .game_info import load_game_information
 from docx import Document
 from docx.shared import Pt
@@ -98,10 +98,10 @@ def write_analysis_document(options):
     summary_statistics = calculate_summary_statistics(analysis)
 
     # Generate an image of the final position
-    board_position_image = write_board_position_image(options[OPT_REFERENCE], "*", None)
+    board_position_image = export_board_image_after_halfmoves(options[OPT_REFERENCE], "*", None)
 
     # Generate an image of the Win Chance Chart
-    win_percent_image = write_win_percent_chart_image(analysis)
+    win_percent_image = export_win_percent_chart_image(analysis)
 
     # Create the document
     document = Document()

@@ -11,6 +11,8 @@ The Chess Analysis application requires the following:
 - Local copies of the chess engines (see the documentation on engine installation)
 - A configured SQLite database (see the documentation on the database)
 
+For movie export, then `ffmpeg <https://ffmpeg.org/>`_ must also be installed.
+
 Creating a Virtual environment
 ------------------------------
 
@@ -40,3 +42,4 @@ cannot load library 'libcairo-2.dll': dlopen(libcairo-2.dll, 2): image not found
 ```
 
 - This can be installed using Homebrew or MacPorts
+
