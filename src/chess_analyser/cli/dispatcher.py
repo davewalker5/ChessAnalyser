@@ -1,12 +1,12 @@
 import argparse
 from ..reporting import tabulate_analysis, tabulate_summary, tabulate_win_chance, \
     write_analysis_spreadsheet, write_analysis_document, tabulate_players, \
-    tabulate_game_info, search_metadata, write_board_position_image
+    tabulate_game_info, search_metadata, export_board_image_after_halfmoves, export_movie
 from ..analysis.analysis import analyse_game
 from ..constants import PROGRAM_NAME, PROGRAM_DESCRIPTION, PROGRAM_VERSION, OPT_LOAD, OPT_ANALYSE, \
     OPT_RESULTS, OPT_WHITE, OPT_BLACK, OPT_SUMMARY, OPT_WIN_CHANCE, OPT_EXPORT, OPT_PLAYERS, OPT_INFO, \
     OPT_SEARCH, OPT_DELETE, OPT_VERSION, OPT_ENGINE, OPT_PGN, OPT_REFERENCE, OPT_IMAGE, \
-    OPT_VERBOSE, OPT_XLSX, OPT_DOCX, OPT_HALFMOVES
+    OPT_VERBOSE, OPT_XLSX, OPT_DOCX, OPT_HALFMOVES, OPT_MOVIE, OPT_DURATION
 from ..pgn import import_pgn, export_pgn
 from ..management import GAME, ANALYSIS, delete_data
 
@@ -43,13 +43,29 @@ def configure_parser():
     parser.add_argument("-ref", "--reference", nargs=1, help="Reference for an imported game")
     parser.add_argument("-x", "--xlsx", nargs=1, help="Path to an XLSX file to export to")
     parser.add_argument("-d", "--docx", nargs=1, help="Path to a Word document to export to")
-    parser.add_argument("-im", "--image", nargs=1, help="Path to ain image file (PGN format) to export to")
-    parser.add_argument("-hm", "--halfmoves", nargs=1, help="Halfmove number to export at")
+    parser.add_argument("-im", "--image", nargs=1, help="Path to an image file (PNG format) to export to")
+    parser.add_argument("-hm", "--halfmoves", nargs=1, help="Halfmove number to export an image at")
+    parser.add_argument("-mov", "--movie", nargs=1, help="Path to a movie file (MP4 format) to export to")
+    parser.add_argument("-du", "--duration", nargs=1, help="Movie frame duration in seconds")
 
     # Flags
     parser.add_argument("-vb", "--verbose", action="store_true", help="Write analysis details to the console during analysis")
 
     return parser
+
+
+def get_float_argument_value(value):
+    """
+    Convert an argument value to a float
+
+    :param value: Argument value
+    :return: Floating point number derived from the value or None
+    """
+    try:
+        return float(value[0])
+
+    except ValueError:
+        return None
 
 
 def parse_command_line():
@@ -86,6 +102,9 @@ def parse_command_line():
         OPT_DOCX: args.docx[0] if args.docx else None,
         OPT_IMAGE: args.image[0] if args.image else None,
         OPT_HALFMOVES: int(args.halfmoves[0]) if args.halfmoves else None,
+        OPT_IMAGE: args.image[0] if args.image else None,
+        OPT_MOVIE: args.movie[0] if args.movie else None,
+        OPT_DURATION: get_float_argument_value(args.duration),
 
         # Flags
         OPT_VERBOSE: args.verbose
@@ -134,7 +153,10 @@ def dispatch_export(options):
         export_pgn(options)
 
     if options[OPT_IMAGE]:
-        write_board_position_image(options[OPT_REFERENCE], options[OPT_HALFMOVES], options[OPT_IMAGE])
+        export_board_image_after_halfmoves(options[OPT_REFERENCE], options[OPT_HALFMOVES], options[OPT_IMAGE])
+
+    if options[OPT_MOVIE]:
+        export_movie(options[OPT_REFERENCE], options[OPT_MOVIE], options[OPT_DURATION])
 
 
 def confirm(targets):
