@@ -38,7 +38,7 @@ def get_player_analysis_for_report_document(analysis, player):
     :param player: Player to extract the data for
     :return: Analysis data for the report for the specifed player
     """
-    player_analysis = extract_player_analysis(analysis, WHITE)
+    player_analysis = extract_player_analysis(analysis, player)
     return [
         [
             x[MOVE_INDEX],
@@ -98,7 +98,7 @@ def write_analysis_document(options):
     summary_statistics = calculate_summary_statistics(analysis)
 
     # Generate an image of the final position
-    board_position_image = write_board_position_image(options[OPT_REFERENCE])
+    board_position_image = write_board_position_image(options[OPT_REFERENCE], "*", None)
 
     # Generate an image of the Win Chance Chart
     win_percent_image = write_win_percent_chart_image(analysis)
