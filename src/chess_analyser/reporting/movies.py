@@ -49,24 +49,23 @@ def export_movie(identifier, movie_file, clip_duration):
         raise ValueError(f"No moves found for the game with ID {game.id}")
 
     # Create a temporary folder to hold the images
-    folder = "/Users/dave/Temporary" # tempfile.TemporaryDirectory().name
+    with tempfile.TemporaryDirectory() as folder:
+        # Create a board and write the starting position image before any moves
+        board = chess.Board()
+        image_clip = _create_image_clip_from_position(board, folder, STARTING_POSITION_IMAGE, clip_duration)
+        clips = [image_clip]
 
-    # Create a board and write the starting position image before any moves
-    board = chess.Board()
-    image_clip = _create_image_clip_from_position(board, folder, STARTING_POSITION_IMAGE, clip_duration)
-    clips = [image_clip]
+        # Iterate over the moves, making each one, in turn, and capturing an image of the board
+        for i, move in enumerate(game.moves):
+            # Capture the SAN and push the UCI move
+            san = move.san
+            board.push_uci(move.uci)
 
-    # Iterate over the moves, making each one, in turn, and capturing an image of the board
-    for i, move in enumerate(game.moves):
-        # Capture the SAN and push the UCI move
-        san = move.san
-        board.push_uci(move.uci)
+            # Generate a board image clip
+            image_clip = _create_image_clip_from_position(board, folder, f"{i}.png", clip_duration)
+            clips.append(image_clip)
 
-        # Generate a board image clip
-        image_clip = _create_image_clip_from_position(board, folder, f"{i}.png", clip_duration)
-        clips.append(image_clip)
-
-    # Combine all clips into the final video
-    fps = 1.0 / clip_duration
-    final_clip = concatenate_videoclips(clips, method="compose")
-    final_clip.write_videofile(movie_file, fps=fps, codec="libx264")
+        # Combine all clips into the final video
+        fps = 1.0 / clip_duration
+        final_clip = concatenate_videoclips(clips, method="compose")
+        final_clip.write_videofile(movie_file, fps=fps, codec="libx264")
