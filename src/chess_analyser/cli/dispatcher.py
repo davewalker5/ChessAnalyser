@@ -64,7 +64,7 @@ def get_float_argument_value(value):
     try:
         return float(value[0])
 
-    except ValueError:
+    except:
         return None
 
 
