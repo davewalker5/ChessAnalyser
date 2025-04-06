@@ -49,3 +49,10 @@ To export an MP4 format move of a game that's been loaded, but not necessarily a
 
 
 "<n>" is the number of seconds for which each move in the game is displayed. The duration should be a positive number e.g. 0.5, 1.
+
+By default, the captions for each frame include only the move. If the game has been analysed using an engine, its move annotations
+and evaluations can be included in the caption by adding the "--engine" option:
+
+.. code-block:: bash
+
+    run.sh --export --reference "<unique-game-reference>" --movie "<movie-file-path>" --duration <n> --engine <engine-name>

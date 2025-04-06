@@ -84,7 +84,7 @@ def create_worksheet(workbook, title, headers, data):
     worksheet.autofit()
 
 
-def write_analysis_spreadsheet(options):
+def export_analysis_spreadsheet(options):
     """
     Generate an analysis report spreadsheet
 

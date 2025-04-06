@@ -83,7 +83,7 @@ def add_table_to_analysis_document(document, headers, table_data):
     table.style = "Light Shading Accent 1"
 
 
-def write_analysis_document(options):
+def export_analysis_document(options):
     """
     Generate an analysis report document
 
