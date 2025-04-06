@@ -21,10 +21,7 @@ def fast_forward_game(board, moves, halfmoves):
         return
 
     # The halfmove is either "*", for the end of the game, or a number
-    if isinstance(halfmoves, int):
-        target = halfmoves
-    else:
-        target = int(halfmoves) if halfmoves.isdigit() else len(moves)
+    target = int(halfmoves) if halfmoves.isdigit() else len(moves)
 
     # Iterate over the moves, making each one and returning after the specified halfmove has been made
     for i, move in enumerate(moves):
@@ -67,7 +64,7 @@ def export_board_image_after_halfmoves(identifier, halfmoves, filename):
 
     # Fast forward to the specified point in the game
     board = chess.Board()
-    _fast_forward_game(board, game.moves, halfmoves)
+    fast_forward_game(board, game.moves, halfmoves)
 
     # Now create an SVG image from the board in that position and convert to PNG
     image_file_path = export_current_position_image(board, filename)
