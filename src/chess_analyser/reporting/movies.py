@@ -1,6 +1,7 @@
 from ..constants import get_player, WHITE
-from ..database.logic import load_game
+from ..database.logic import load_game, get_analysis_engine_id
 from ..database.models import get_data_path
+from ..engines import load_engine_definitions, get_engine_display_name
 from .images import export_current_position_image
 import chess
 import os
@@ -73,7 +74,42 @@ def _create_image_clip_from_position(board, caption, folder, image_name, duratio
     return image_clip
 
 
-def export_movie(identifier, movie_file, clip_duration):
+def get_caption(previous_caption, halfmove, san, engine_display_name, analysis):
+    """
+    Get the caption for the current fram
+
+    :param previous_caption: Caption for the previous halfmove
+    :param halfmove: Halfmove number
+    :param san: SAN for the move
+    :param engine_display_name: Name of the engine used to perform the analysis
+    :param analysis: Analysis object for the move or None
+    """
+
+    player = get_player(halfmove)
+    if player == WHITE:
+        # For white, the previous caption is empty so build the annotation for the move
+        # from scratch 
+        engine_description = f"{engine_display_name} - " if engine_display_name else ""
+        caption = f"{engine_description}{1 + halfmove // 2}. {san}"
+        previous_caption = caption
+    else:
+        # For black, the previous caption contains the engine name and white's move and analysis
+        # Just append the SAN for black's move
+        caption = f"{previous_caption} {san}"
+        previous_caption = ""
+
+    if analysis:
+        # Add the move annotation and the engine's evaluation
+        caption += f"{analysis.annotation} [{analysis.evaluation}]"
+
+    # Set the previous caption based on the player. For white, it's the current caption as this
+    # is pre-pended to black's move on the next halfmove
+    previous_caption = caption if player == WHITE else ""
+
+    return previous_caption, caption
+
+
+def export_movie(identifier, engine, movie_file, clip_duration):
     """
     Write a movie of all the moves in a game
 
@@ -81,6 +117,15 @@ def export_movie(identifier, movie_file, clip_duration):
     :param movie_file: Output movie file path
     :param clip_duration: Time in seconds between each move
     """
+
+    # If the engine is specified, its analysis will be used in the annotations so get its ID
+    if engine:
+        load_engine_definitions()
+        analysis_engine_id = get_analysis_engine_id(engine)
+        engine_display_name = get_engine_display_name(engine)
+    else:
+        analysis_engine_id = None
+        engine_display_name = None
 
     # Load the game
     game = load_game(identifier)
@@ -99,17 +144,20 @@ def export_movie(identifier, movie_file, clip_duration):
         clips = [image_clip]
 
         # Iterate over the moves, making each one, in turn, and capturing an image of the board
+        previous_caption = ""
         for i, move in enumerate(game.moves):
             # Capture the SAN and push the UCI move
             san = move.san
             board.push_uci(move.uci)
 
-            # Generate a caption containing the move
-            if get_player(i + 1) == WHITE:
-                caption = f"{1 + i // 2}. {san}"
-                prev_caption = caption
+            # If the engine's been specified, get the annotation for the move
+            if analysis_engine_id:
+                analysis = [a for a in move.analyses if a.analysis_engine_id == analysis_engine_id][0]
             else:
-                caption = f"{prev_caption} {san}"
+                analysis = None
+
+            # Generate the caption
+            previous_caption, caption = get_caption(previous_caption, 1 + i, san, engine_display_name, analysis)
 
             # Generate a board image clip
             image_clip = _create_image_clip_from_position(board, caption, folder, f"{i}.png", clip_duration)

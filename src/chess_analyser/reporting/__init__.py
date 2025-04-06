@@ -1,9 +1,9 @@
 from .console_reports import print_analysis_table_headers, print_analysis_table_row, tabulate_analysis, tabulate_summary, \
     tabulate_win_chance, tabulate_players, tabulate_game_info, tabulate_games
-from .document import write_analysis_document
+from .document import export_analysis_document
 from .images import export_current_position_image, export_board_image_after_halfmoves, export_win_percent_chart_image
 from .movies import export_movie
-from .spreadsheet import write_analysis_spreadsheet
+from .spreadsheet import export_analysis_spreadsheet
 from .game_info import load_game_information
 from .search import search_metadata
 
@@ -17,11 +17,11 @@ __all__ = [
     "tabulate_players",
     "tabulate_game_info",
     "tabulate_games",
-    "write_analysis_document",
+    "export_analysis_document",
     "export_current_position_image",
     "export_board_image_after_halfmoves",
     "export_win_percent_chart_image",
-    "write_analysis_spreadsheet",
+    "export_analysis_spreadsheet",
     "load_game_information",
     "search_metadata",
     "export_movie"
