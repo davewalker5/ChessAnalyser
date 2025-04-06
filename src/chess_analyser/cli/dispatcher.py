@@ -101,7 +101,7 @@ def parse_command_line():
         OPT_XLSX: args.xlsx[0] if args.xlsx else None,
         OPT_DOCX: args.docx[0] if args.docx else None,
         OPT_IMAGE: args.image[0] if args.image else None,
-        OPT_HALFMOVES: int(args.halfmoves[0]) if args.halfmoves else None,
+        OPT_HALFMOVES: args.halfmoves[0] if args.halfmoves else None,
         OPT_IMAGE: args.image[0] if args.image else None,
         OPT_MOVIE: args.movie[0] if args.movie else None,
         OPT_DURATION: get_float_argument_value(args.duration),
