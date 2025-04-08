@@ -5,7 +5,6 @@ echo "Testing console reporting options for game '$REFERENCE'"
 echo "Output will be redirected to text files in '$TEST_RESULTS_FOLDER'"
 
 /bin/bash "$PROJECT_ROOT/run.sh" --results --reference "$REFERENCE" --engine "$ANALYSIS_ENGINE" &> "$TEST_RESULTS_FOLDER/results.txt"
-# echo "| Junk |" >> "$TEST_RESULTS_FOLDER/results.txt"
 /bin/bash "$INTEGRATION_TESTS_FOLDER/verify.sh" "$TEST_RESULTS_FOLDER/results.txt" results
 if [ $? -ne 0 ]; then
     exit 1
