@@ -140,6 +140,7 @@ cython_debug/
 .DS_Store
 .vscode/
 .idea/
+tests/results/
 
 *.csv
 *.xlsx
@@ -148,6 +149,7 @@ cython_debug/
 *.png
 *.jpg
 *.bak
+*.mp4
 chess.db
 example.pgn
 clean.sh
