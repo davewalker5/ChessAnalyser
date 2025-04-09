@@ -1,6 +1,7 @@
 Data Export
 ===========
 
+.. include:: run_script_note.rst
 
 Exporting Analysis Results
 --------------------------
@@ -25,6 +26,9 @@ If required, multiple outputs can be specified in a single export command:
 
 This command exports the analysis in both XLSX and DOCX format and writes the annotated PGN file.
 
+By default, export is silent but the "--verbose" option can be added to the above commands to produce more
+verbose output.
+
 Exporting Images of the Board
 -----------------------------
 
@@ -37,6 +41,9 @@ To export a PNG format image of the board position for a game that's been loaded
 
 "<halfmoves>" indicates the number of halfmoves to fast-forward by before exporting the image. It may also have the value "*" to fast-forward
 to the end of the game and export the final position.
+
+By default, export is silent but the "--verbose" option can be added to the above command to produce more
+verbose output.
 
 Exporting Movies of a Game
 --------------------------
@@ -56,3 +63,6 @@ and evaluations can be included in the caption by adding the "--engine" option:
 .. code-block:: bash
 
     run.sh --export --reference "<unique-game-reference>" --movie "<movie-file-path>" --duration <n> --engine <engine-name>
+
+By default, export is silent but the "--verbose" option can be added to the above commands to produce more
+verbose output.
