@@ -22,6 +22,9 @@ To load a PGN file into the database:
 The PGN file path and reference must be enclosed in double-quotes, as shown, if they contain spaces
 but quoting is optional if they don't.
 
+By default, loading is silent but the "--verbose" option can be added to the above command to produce more
+verbose output.
+
 On load, games are stored with a reference that's used to refer to them in the analysis and reporting
 phases and must therefore be unique - the application will show an error and will not import the PGN
 file if the reference is already in use.

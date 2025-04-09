@@ -1,5 +1,7 @@
 from ..database.logic import list_metadata_items, get_player, create_player, load_game, create_game, create_metadata_value, create_move
-from chess_analyser.constants import OPT_PGN, OPT_REFERENCE
+from ..reporting import tabulate_game_info
+from ..utils import check_required_options, CHECK_FOR_ALL
+from chess_analyser.constants import OPT_PGN, OPT_REFERENCE, OPT_VERBOSE
 import chess
 import chess.pgn
 from pathlib import Path
@@ -99,6 +101,13 @@ def import_pgn(options):
     :param reference: Unique game reference
     :return: The ID of the imported game
     """
+    # Check the required options have been supplied
+    check_required_options(options, [OPT_PGN], CHECK_FOR_ALL)
+
+    if options[OPT_VERBOSE]:
+        print(f"\nImporting Game from a PGN File\n")
+        print(f"PGN File  : {options[OPT_PGN]}")
+        print(f"Reference : {options[OPT_REFERENCE]}\n")
 
     # Check the PGN file exists
     pgn_file = Path(options[OPT_PGN])
@@ -110,6 +119,9 @@ def import_pgn(options):
         game = chess.pgn.read_game(pgn)
 
     #  Extract the standard headers
+    if options[OPT_VERBOSE]:
+        print("Reading game metadata ...")
+
     metadata_items = list_metadata_items()
     headers = get_pgn_headers(game, [x for x in metadata_items if x.is_pgn])
 
@@ -120,6 +132,9 @@ def import_pgn(options):
     }
 
     # Extract the move data
+    if options[OPT_VERBOSE]:
+        print("Loading the moves ...")
+
     moves = []
     board = game.board()
     for i, move in enumerate(game.mainline_moves()):
@@ -150,5 +165,14 @@ def import_pgn(options):
     # Store the game, defaulting the reference to the PGN file name without the extension if no
     # reference is given
     reference = options[OPT_REFERENCE] if options[OPT_REFERENCE] else Path(pgn_file).with_suffix('').stem
+
+    if options[OPT_VERBOSE]:
+        print(f"Storing the game with reference {reference} ...\n")
+
     game_id = store_game(reference, headers, moves)
+
+    # If verbose output's requested, show the game metadata
+    if options[OPT_VERBOSE]:
+        tabulate_game_info({ OPT_REFERENCE: reference })
+
     return game_id
