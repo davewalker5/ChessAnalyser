@@ -4,7 +4,7 @@ import chess.svg
 from ..analysis.calculations import calculate_win_chance_chart_data
 from ..database.logic import load_game
 from ..utils import check_required_options, CHECK_FOR_ALL
-from ..constants import OPT_REFERENCE, OPT_IMAGE, OPT_HALFMOVES
+from ..constants import OPT_REFERENCE, OPT_IMAGE, OPT_HALFMOVES, OPT_VERBOSE
 import matplotlib.pyplot as plt
 import os
 import pandas as pd
@@ -46,15 +46,24 @@ def export_current_position_image(board, filename):
     return image_file_path
 
 
-def export_board_image_after_halfmoves(identifier, halfmoves, filename):
+def export_board_image_after_halfmoves(identifier, halfmoves, filename, verbose):
     """
     Generate a PNG image of the final state of the board for a game
 
     :param identifier: Game identifier
     :param halfmoves: Fast-forward by this number of halfmoves before exporting
-    :param fiename: Optional filename to export to, or None
+    :param filename: Optional filename to export to, or None
+    :param verbose: True to generate step-by-step output
     :return: Actual filename written
     """
+
+    if verbose:
+        print(f"\nExporting Board Image\n")
+        print(f"Game reference     : {identifier}")
+        print(f"Export at position : {halfmoves} halfmoves")
+        print(f"Image file         : {filename}")
+        print("\nLoading game ...")
+
     # Load the game
     game = load_game(identifier)
     if not game:
@@ -65,10 +74,16 @@ def export_board_image_after_halfmoves(identifier, halfmoves, filename):
         raise ValueError(f"No moves found for the game with ID {game.id}")
 
     # Fast forward to the specified point in the game
+    if verbose:
+        print(f"Fast-forwarding by {halfmoves} halfmoves ...")
+
     board = chess.Board()
     fast_forward_game(board, game.moves, halfmoves)
 
     # Now create an SVG image from the board in that position and convert to PNG
+    if verbose:
+        print(f"Saving image ...")
+
     image_file_path = export_current_position_image(board, filename)
     return image_file_path
 
@@ -117,4 +132,4 @@ def export_board_image(options):
     check_required_options(options, [OPT_REFERENCE, OPT_HALFMOVES, OPT_IMAGE], CHECK_FOR_ALL)
 
     # Export the image
-    export_board_image_after_halfmoves(options[OPT_REFERENCE], options[OPT_HALFMOVES], options[OPT_IMAGE])
+    export_board_image_after_halfmoves(options[OPT_REFERENCE], options[OPT_HALFMOVES], options[OPT_IMAGE], options[OPT_VERBOSE])

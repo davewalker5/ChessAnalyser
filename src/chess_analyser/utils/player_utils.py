@@ -7,6 +7,7 @@ def get_player_for_halfmove(halfmove):
     Given a halfmove count, determine which player is to play next
 
     :param halfmove: Halfmove number
+    :return: Player, either WHITE or BLACK
     """
     player = WHITE if (halfmove % 2) > 0 else BLACK
     return player

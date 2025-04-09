@@ -1,4 +1,4 @@
-from ..constants import OPT_ENGINE, OPT_REFERENCE, OPT_DOCX
+from ..constants import OPT_ENGINE, OPT_REFERENCE, OPT_DOCX, OPT_VERBOSE
 from ..utils import WHITE, BLACK, check_required_options, CHECK_FOR_ALL
 from ..database.logic import load_analysis, get_analysis_engine_id, MOVE_INDEX, SAN_INDEX, ANNOTATION_INDEX, \
     EVALUATION_INDEX, CP_LOSS_INDEX, WIN_PERCENT_INDEX, ACCURACY_INDEX
@@ -94,20 +94,35 @@ def export_analysis_document(options):
     # Check the required options have been supplied
     check_required_options(options, [OPT_ENGINE, OPT_REFERENCE, OPT_DOCX], CHECK_FOR_ALL)
 
+    if options[OPT_VERBOSE]:
+        print(f"\nExporting Analysis Report as a Word Document\n")
+        print(f"Game reference  : {options[OPT_REFERENCE]}")
+        print(f"Analysis engine : {options[OPT_ENGINE]}")
+        print(f"DOCX file       : {options[OPT_DOCX]}")
+        print("\nLoading analysis results ...")
+
     # Load the analysis results
     analysis_engine_id = get_analysis_engine_id(options[OPT_ENGINE])
     analysis = load_analysis(options[OPT_REFERENCE], analysis_engine_id)
 
     # Calculate summary statistics
+    if options[OPT_VERBOSE]:
+        print("Calculating summary statistics ...")
     summary_statistics = calculate_summary_statistics(analysis)
 
     # Generate an image of the final position
-    board_position_image = export_board_image_after_halfmoves(options[OPT_REFERENCE], "*", None)
+    if options[OPT_VERBOSE]:
+        print("Generating board image for final position ...")
+    board_position_image = export_board_image_after_halfmoves(options[OPT_REFERENCE], "*", None, False)
 
     # Generate an image of the Win Chance Chart
+    if options[OPT_VERBOSE]:
+        print("Generating win chance chart ...")
     win_percent_image = export_win_percent_chart_image(analysis)
 
     # Create the document
+    if options[OPT_VERBOSE]:
+        print("Creating document ...")
     document = Document()
 
     # Set the font size for normal text
