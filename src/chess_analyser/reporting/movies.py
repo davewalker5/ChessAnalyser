@@ -1,4 +1,5 @@
-from ..constants import get_player, WHITE
+from ..constants import OPT_ENGINE, OPT_REFERENCE, OPT_MOVIE, OPT_DURATION
+from ..utils import get_player_for_halfmove, WHITE, check_required_options, CHECK_FOR_ALL
 from ..database.logic import load_game, get_analysis_engine_id
 from ..database.models import get_data_path
 from ..engines import load_engine_definitions, get_engine_display_name
@@ -76,7 +77,7 @@ def _create_image_clip_from_position(board, caption, folder, image_name, duratio
 
 def get_caption(previous_caption, halfmove, san, engine_display_name, analysis):
     """
-    Get the caption for the current fram
+    Get the caption for the current frame
 
     :param previous_caption: Caption for the previous halfmove
     :param halfmove: Halfmove number
@@ -85,7 +86,7 @@ def get_caption(previous_caption, halfmove, san, engine_display_name, analysis):
     :param analysis: Analysis object for the move or None
     """
 
-    player = get_player(halfmove)
+    player = get_player_for_halfmove(halfmove)
     if player == WHITE:
         # For white, the previous caption is empty so build the annotation for the move
         # from scratch 
@@ -109,28 +110,29 @@ def get_caption(previous_caption, halfmove, san, engine_display_name, analysis):
     return previous_caption, caption
 
 
-def export_movie(identifier, engine, movie_file, clip_duration):
+def export_movie(options):
     """
     Write a movie of all the moves in a game
 
-    :param identifier: Game identifier
-    :param movie_file: Output movie file path
-    :param clip_duration: Time in seconds between each move
+    :param options: Dictionary of export parameters
     """
 
+    # Check the required options have been supplied
+    check_required_options(options, [OPT_REFERENCE, OPT_MOVIE, OPT_DURATION], CHECK_FOR_ALL)
+
     # If the engine is specified, its analysis will be used in the annotations so get its ID
-    if engine:
+    if options[OPT_ENGINE]:
         load_engine_definitions()
-        analysis_engine_id = get_analysis_engine_id(engine)
-        engine_display_name = get_engine_display_name(engine)
+        analysis_engine_id = get_analysis_engine_id(options[OPT_ENGINE])
+        engine_display_name = get_engine_display_name(options[OPT_ENGINE])
     else:
         analysis_engine_id = None
         engine_display_name = None
 
     # Load the game
-    game = load_game(identifier)
+    game = load_game(options[OPT_REFERENCE])
     if not game:
-        raise ValueError(f"Game {identifier} not found")
+        raise ValueError(f"Game {options[OPT_REFERENCE]} not found")
 
     # Relationship/navigation properties should load the moves
     if not game.moves:
@@ -140,7 +142,7 @@ def export_movie(identifier, engine, movie_file, clip_duration):
     with tempfile.TemporaryDirectory() as folder:
         # Create a board and write the starting position image before any moves
         board = chess.Board()
-        image_clip = _create_image_clip_from_position(board, "", folder, STARTING_POSITION_IMAGE, clip_duration)
+        image_clip = _create_image_clip_from_position(board, "", folder, STARTING_POSITION_IMAGE, options[OPT_DURATION])
         clips = [image_clip]
 
         # Iterate over the moves, making each one, in turn, and capturing an image of the board
@@ -160,10 +162,10 @@ def export_movie(identifier, engine, movie_file, clip_duration):
             previous_caption, caption = get_caption(previous_caption, 1 + i, san, engine_display_name, analysis)
 
             # Generate a board image clip
-            image_clip = _create_image_clip_from_position(board, caption, folder, f"{i}.png", clip_duration)
+            image_clip = _create_image_clip_from_position(board, caption, folder, f"{i}.png", options[OPT_DURATION])
             clips.append(image_clip)
 
         # Combine all clips into the final video
-        fps = 1.0 / clip_duration
+        fps = 1.0 / options[OPT_DURATION]
         final_clip = concatenate_videoclips(clips, method="compose")
-        final_clip.write_videofile(movie_file, fps=fps, codec="libx264")
+        final_clip.write_videofile(options[OPT_MOVIE], fps=fps, codec="libx264")

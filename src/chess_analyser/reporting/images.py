@@ -3,6 +3,8 @@ import chess
 import chess.svg
 from ..analysis.calculations import calculate_win_chance_chart_data
 from ..database.logic import load_game
+from ..utils import check_required_options, CHECK_FOR_ALL
+from ..constants import OPT_REFERENCE, OPT_IMAGE, OPT_HALFMOVES
 import matplotlib.pyplot as plt
 import os
 import pandas as pd
@@ -102,3 +104,17 @@ def export_win_percent_chart_image(analysis):
     plt.close()
 
     return image_file_name
+
+
+def export_board_image(options):
+    """
+    Export an image of the board
+
+    :param options: Dictionary of export options
+    """
+
+    # Check the required options have been supplied
+    check_required_options(options, [OPT_REFERENCE, OPT_HALFMOVES, OPT_IMAGE], CHECK_FOR_ALL)
+
+    # Export the image
+    export_board_image_after_halfmoves(options[OPT_REFERENCE], options[OPT_HALFMOVES], options[OPT_IMAGE])

@@ -1,7 +1,7 @@
 # Version Information
 PROGRAM_NAME = "Chess Analyser"
 PROGRAM_DESCRIPTION = "Game analysis using UCI engines"
-PROGRAM_VERSION = "1.9.1"
+PROGRAM_VERSION = "1.10.0"
 
 # Members of the analysis options dictionary
 OPT_LOAD = "load"
@@ -32,16 +32,3 @@ OPT_VERBOSE = "verbose"
 
 # Engine and scoring control
 INITIAL_SCORE = 15
-
-# Constants representing the player
-WHITE = "White"
-BLACK = "Black"
-
-def get_player(halfmove):
-    """
-    Given a halfmove count, determine which player is to play next
-
-    :halfmove:
-    """
-    player = WHITE if (halfmove % 2) > 0 else BLACK
-    return player

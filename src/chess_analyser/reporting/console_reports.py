@@ -1,6 +1,7 @@
 from .constants import ANALYSIS_HEADERS, SUMMARY_HEADERS, WIN_CHANCE_HEADERS
 from .game_info import load_game_information
-from ..constants import OPT_ENGINE, OPT_REFERENCE, OPT_WHITE, OPT_BLACK, WHITE, BLACK
+from ..constants import OPT_ENGINE, OPT_REFERENCE, OPT_WHITE, OPT_BLACK
+from ..utils import WHITE, BLACK, check_required_options, CHECK_FOR_ALL
 from ..database.logic import load_analysis, get_analysis_engine_id, list_players, list_metadata_items
 from ..analysis.calculations import calculate_summary_statistics, calculate_win_chance_chart_data, extract_player_analysis
 
@@ -91,6 +92,9 @@ def tabulate_analysis(options):
     :param options: Dictionary of reporting parameters
     """
 
+    # Check the command line options
+    check_required_options(options, [OPT_ENGINE, OPT_REFERENCE], CHECK_FOR_ALL)
+
     # Load the analysis for the game and engine
     analysis = _load_analysis(options)
 
@@ -116,6 +120,9 @@ def tabulate_summary(options):
     :param options: Dictionary of reporting parameters
     """
 
+    # Check the command line options
+    check_required_options(options, [OPT_ENGINE, OPT_REFERENCE], CHECK_FOR_ALL)
+
     # Load the analysis for the game and engine
     analysis = _load_analysis(options)
 
@@ -133,6 +140,9 @@ def tabulate_win_chance(options):
 
     :param options: Dictionary of reporting parameters
     """
+
+    # Check the command line options
+    check_required_options(options, [OPT_ENGINE, OPT_REFERENCE], CHECK_FOR_ALL)
 
     # Load the analysis for the game and engine
     analysis = _load_analysis(options)
@@ -163,6 +173,15 @@ def tabulate_players():
 
 
 def tabulate_game_info(options):
+    """
+    Tabulate the game information taken from the PGN headers
+
+    :param options: Dictionary of reporting parameters
+    """
+
+    # Check the command line options
+    check_required_options(options, [OPT_REFERENCE], CHECK_FOR_ALL)
+
     # Load the game information
     info = load_game_information(options[OPT_REFERENCE], False, None, True)
 
@@ -175,6 +194,12 @@ def tabulate_game_info(options):
 
 
 def tabulate_games(games):
+    """
+    Tabulate summary details for a set of games
+
+    :param games: List of games to tabulate
+    """
+
     # Get a list of metadata items so we can pick out the values to tabulate
     items = list_metadata_items()
     item_ids = [

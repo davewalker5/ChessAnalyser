@@ -1,4 +1,5 @@
-from ..constants import WHITE, BLACK, OPT_ENGINE, OPT_REFERENCE, OPT_DOCX
+from ..constants import OPT_ENGINE, OPT_REFERENCE, OPT_DOCX
+from ..utils import WHITE, BLACK, check_required_options, CHECK_FOR_ALL
 from ..database.logic import load_analysis, get_analysis_engine_id, MOVE_INDEX, SAN_INDEX, ANNOTATION_INDEX, \
     EVALUATION_INDEX, CP_LOSS_INDEX, WIN_PERCENT_INDEX, ACCURACY_INDEX
 from .constants import ANALYSIS_HEADERS, SUMMARY_HEADERS
@@ -89,6 +90,9 @@ def export_analysis_document(options):
 
     :param options: Dictionary of reporting parameters
     """
+
+    # Check the required options have been supplied
+    check_required_options(options, [OPT_ENGINE, OPT_REFERENCE, OPT_DOCX], CHECK_FOR_ALL)
 
     # Load the analysis results
     analysis_engine_id = get_analysis_engine_id(options[OPT_ENGINE])

@@ -1,4 +1,4 @@
-from ...constants import WHITE, BLACK
+from ...utils import WHITE, BLACK
 from ...database.logic import PLAYER_INDEX, CP_LOSS_INDEX, ACCURACY_INDEX, ANNOTATION_INDEX, \
     WIN_PERCENT_INDEX
 import statistics

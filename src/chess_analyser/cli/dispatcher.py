@@ -1,7 +1,7 @@
 import argparse
 from ..reporting import tabulate_analysis, tabulate_summary, tabulate_win_chance, \
     export_analysis_spreadsheet, export_analysis_document, tabulate_players, \
-    tabulate_game_info, search_metadata, export_board_image_after_halfmoves, export_movie
+    tabulate_game_info, search_metadata, export_board_image, export_movie
 from ..analysis.analysis import analyse_game
 from ..constants import PROGRAM_NAME, PROGRAM_DESCRIPTION, PROGRAM_VERSION, OPT_LOAD, OPT_ANALYSE, \
     OPT_RESULTS, OPT_WHITE, OPT_BLACK, OPT_SUMMARY, OPT_WIN_CHANCE, OPT_EXPORT, OPT_PLAYERS, OPT_INFO, \
@@ -153,10 +153,10 @@ def dispatch_export(options):
         export_pgn(options)
 
     if options[OPT_IMAGE]:
-        export_board_image_after_halfmoves(options[OPT_REFERENCE], options[OPT_HALFMOVES], options[OPT_IMAGE])
+        export_board_image(options)
 
     if options[OPT_MOVIE]:
-        export_movie(options[OPT_REFERENCE], options[OPT_ENGINE], options[OPT_MOVIE], options[OPT_DURATION])
+        export_movie(options)
 
 
 def confirm(targets):
