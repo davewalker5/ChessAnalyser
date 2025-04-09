@@ -1,4 +1,4 @@
-from ..constants import OPT_ENGINE, OPT_REFERENCE, OPT_XLSX
+from ..constants import OPT_ENGINE, OPT_REFERENCE, OPT_XLSX, OPT_VERBOSE
 from ..database.logic import load_analysis, get_analysis_engine_id
 from .constants import ANALYSIS_HEADERS, SUMMARY_HEADERS, WIN_CHANCE_HEADERS
 from ..analysis.calculations import calculate_win_chance_chart_data, calculate_summary_statistics, extract_player_analysis
@@ -95,17 +95,31 @@ def export_analysis_spreadsheet(options):
     # Check the required options have been supplied
     check_required_options(options, [OPT_ENGINE, OPT_REFERENCE, OPT_XLSX], CHECK_FOR_ALL)
 
+    if options[OPT_VERBOSE]:
+        print(f"\nExporting Analysis Report as an Excel Spreadsheet\n")
+        print(f"Game reference  : {options[OPT_REFERENCE]}")
+        print(f"Analysis engine : {options[OPT_ENGINE]}")
+        print(f"XLSX file       : {options[OPT_XLSX]}")
+        print("\nLoading analysis results ...")
+
     # Load the analysis results
     analysis_engine_id = get_analysis_engine_id(options[OPT_ENGINE])
     analysis = load_analysis(options[OPT_REFERENCE], analysis_engine_id)
 
     # Calculate summary statistics and extract the white and black player analyses from the
     # combined analysis
+    if options[OPT_VERBOSE]:
+        print("Calculating summary statistics ...")
     summary_statistics = calculate_summary_statistics(analysis)
+
+    if options[OPT_VERBOSE]:
+        print("Calculating per-player move analysis ...")
     white_analysis = extract_player_analysis(analysis, WHITE)
     black_analysis = extract_player_analysis(analysis, BLACK)
 
     # Calculate the win chance chart and table data
+    if options[OPT_VERBOSE]:
+        print("Generating win chance data ...")
     chart_data = calculate_win_chance_chart_data(analysis)
     chart_table = [[i + 1, x] for i, x in enumerate(chart_data)]
 
@@ -113,6 +127,8 @@ def export_analysis_spreadsheet(options):
     info = load_game_information(options[OPT_REFERENCE], False, options[OPT_ENGINE], True)
 
     # Create a new Excel workbook to hold the analysis details
+    if options[OPT_VERBOSE]:
+        print("Creating workbook ...")
     workbook = create_workbook(options[OPT_XLSX])
 
     # Add the worksheets to the workbook

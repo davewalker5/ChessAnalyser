@@ -9,6 +9,7 @@ from ..constants import PROGRAM_NAME, PROGRAM_DESCRIPTION, PROGRAM_VERSION, OPT_
     OPT_VERBOSE, OPT_XLSX, OPT_DOCX, OPT_HALFMOVES, OPT_MOVIE, OPT_DURATION
 from ..pgn import import_pgn, export_pgn
 from ..management import GAME, ANALYSIS, delete_data
+from ..utils import check_required_options, CHECK_FOR_ALL
 
 
 def configure_parser():
@@ -175,17 +176,25 @@ def confirm(targets):
 
 
 def dispatch_delete(options):
-    # The game reference must be specified. If the engine is also specified, just
-    # delete the analysis of that game for that engine. Otherwise, delete everything
-    # related to the game
+    """
+    Delete a game or the analysis of that game by an engine
+
+    :param options: Dictionary of deletion options
+    """
+    # The game reference must be specified
+    check_required_options(options, [OPT_REFERENCE], CHECK_FOR_ALL)
+
+    print()
     if  options[OPT_ENGINE]:
+        # If the engine is specified, just delete the analysis of that game for that engine
         confirmed = confirm(f"the analysis of game {options[OPT_REFERENCE]} for engine {options[OPT_ENGINE]}")
         if confirmed:
-            delete_data(options[OPT_REFERENCE], ANALYSIS, options[OPT_ENGINE])
+            delete_data(options[OPT_REFERENCE], ANALYSIS, options[OPT_ENGINE], options[OPT_VERBOSE])
     else:
+        # If the engine isn't specified, all data relating to the game is deleted
         confirmed = confirm(f"all data relating to game {options[OPT_REFERENCE]}")
         if confirmed:
-            delete_data(options[OPT_REFERENCE], GAME, None)
+            delete_data(options[OPT_REFERENCE], GAME, None, options[OPT_VERBOSE])
 
 
 def dispatch_command_line(options):
@@ -195,24 +204,25 @@ def dispatch_command_line(options):
     :param options: Dictionary of options arising from parsing the command line
     """
 
-    try:
-        if options[OPT_VERSION]:
-            print(f"{PROGRAM_NAME} v{PROGRAM_VERSION}")
-        elif options[OPT_ANALYSE]:
-            analyse_game(options)
-        elif options[OPT_LOAD]:
-            import_pgn(options)
-        elif options[OPT_EXPORT]:
-            dispatch_export(options)
-        elif options[OPT_SEARCH]:
-            search_metadata(options[OPT_SEARCH])
-        elif options[OPT_DELETE]:
-            dispatch_delete(options)
-        else:
-            dispatch_report(options)
+    if options[OPT_VERBOSE] or options[OPT_VERSION]:
+        print(f"\n{PROGRAM_NAME} v{PROGRAM_VERSION}")
 
-    except Exception as e:
-        print(str(e))
+    # try:
+    if options[OPT_ANALYSE]:
+        analyse_game(options)
+    elif options[OPT_LOAD]:
+        import_pgn(options)
+    elif options[OPT_EXPORT]:
+        dispatch_export(options)
+    elif options[OPT_SEARCH]:
+        search_metadata(options[OPT_SEARCH])
+    elif options[OPT_DELETE]:
+        dispatch_delete(options)
+    else:
+        dispatch_report(options)
+
+    # except Exception as e:
+    #     print(str(e))
 
 
 

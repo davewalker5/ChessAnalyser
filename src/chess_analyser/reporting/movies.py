@@ -1,4 +1,4 @@
-from ..constants import OPT_ENGINE, OPT_REFERENCE, OPT_MOVIE, OPT_DURATION
+from ..constants import OPT_ENGINE, OPT_REFERENCE, OPT_MOVIE, OPT_DURATION, OPT_VERBOSE
 from ..utils import get_player_for_halfmove, WHITE, check_required_options, CHECK_FOR_ALL
 from ..database.logic import load_game, get_analysis_engine_id
 from ..database.models import get_data_path
@@ -120,6 +120,13 @@ def export_movie(options):
     # Check the required options have been supplied
     check_required_options(options, [OPT_REFERENCE, OPT_MOVIE, OPT_DURATION], CHECK_FOR_ALL)
 
+    if options[OPT_VERBOSE]:
+        print(f"\nExporting Game Movie\n")
+        print(f"Game reference  : {options[OPT_REFERENCE]}")
+        print(f"Analysis engine : {options[OPT_ENGINE]}")
+        print(f"Frame Duration  : {options[OPT_DURATION]}")
+        print(f"Movie file      : {options[OPT_MOVIE]}\n")
+
     # If the engine is specified, its analysis will be used in the annotations so get its ID
     if options[OPT_ENGINE]:
         load_engine_definitions()
@@ -130,6 +137,9 @@ def export_movie(options):
         engine_display_name = None
 
     # Load the game
+    if options[OPT_VERBOSE]:
+        print("Loading game ...")
+
     game = load_game(options[OPT_REFERENCE])
     if not game:
         raise ValueError(f"Game {options[OPT_REFERENCE]} not found")
@@ -141,13 +151,20 @@ def export_movie(options):
     # Create a temporary folder to hold the images
     with tempfile.TemporaryDirectory() as folder:
         # Create a board and write the starting position image before any moves
+        if options[OPT_VERBOSE]:
+            print("Adding frame for the starting position ...")
+
         board = chess.Board()
         image_clip = _create_image_clip_from_position(board, "", folder, STARTING_POSITION_IMAGE, options[OPT_DURATION])
         clips = [image_clip]
 
         # Iterate over the moves, making each one, in turn, and capturing an image of the board
         previous_caption = ""
+        number_of_moves = len(game.moves)
         for i, move in enumerate(game.moves):
+            if options[OPT_VERBOSE]:
+                print(f"Adding frame for move {i + 1} of {number_of_moves} ...\r", end="")
+
             # Capture the SAN and push the UCI move
             san = move.san
             board.push_uci(move.uci)
@@ -166,6 +183,11 @@ def export_movie(options):
             clips.append(image_clip)
 
         # Combine all clips into the final video
+        logger = None
+        if options[OPT_VERBOSE]:
+            print("\nWriting movie file ...")
+            logger = "bar"
+
         fps = 1.0 / options[OPT_DURATION]
         final_clip = concatenate_videoclips(clips, method="compose")
-        final_clip.write_videofile(options[OPT_MOVIE], fps=fps, codec="libx264")
+        final_clip.write_videofile(options[OPT_MOVIE], fps=fps, codec="libx264", logger=logger)

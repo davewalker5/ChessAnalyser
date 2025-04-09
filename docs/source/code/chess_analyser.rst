@@ -14,6 +14,7 @@ Subpackages
    chess_analyser.management
    chess_analyser.pgn
    chess_analyser.reporting
+   chess_analyser.utils
 
 Module contents
 ---------------

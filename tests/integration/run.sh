@@ -47,4 +47,5 @@ fi
 . "$INTEGRATION_TESTS_FOLDER/report.sh"
 . "$INTEGRATION_TESTS_FOLDER/export.sh"
 . "$INTEGRATION_TESTS_FOLDER/search.sh"
+. "$INTEGRATION_TESTS_FOLDER/management.sh"
 . "$INTEGRATION_TESTS_FOLDER/documentation.sh"
