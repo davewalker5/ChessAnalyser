@@ -3,7 +3,7 @@ from ..database.logic import load_analysis, get_analysis_engine_id
 from .constants import ANALYSIS_HEADERS, SUMMARY_HEADERS, WIN_CHANCE_HEADERS
 from ..analysis.calculations import calculate_win_chance_chart_data, calculate_summary_statistics, extract_player_analysis
 from .game_info import load_game_information
-from ..utils import check_required_option, WHITE, BLACK
+from ..utils import check_required_options, WHITE, BLACK, CHECK_FOR_ALL
 import xlsxwriter
 
 # Excel Worksheet titles and formatting
@@ -93,8 +93,7 @@ def export_analysis_spreadsheet(options):
     """
 
     # Check the required options have been supplied
-    check_required_option(options, OPT_ENGINE, "Analysis engine name")
-    check_required_option(options, OPT_REFERENCE, "Game reference")
+    check_required_options(options, [OPT_ENGINE, OPT_REFERENCE, OPT_XLSX], CHECK_FOR_ALL)
 
     # Load the analysis results
     analysis_engine_id = get_analysis_engine_id(options[OPT_ENGINE])

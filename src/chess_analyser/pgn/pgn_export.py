@@ -1,5 +1,5 @@
 from ..constants import INITIAL_SCORE, OPT_REFERENCE, OPT_ENGINE, OPT_PGN
-from ..utils import get_player_for_halfmove, WHITE
+from ..utils import get_player_for_halfmove, WHITE, check_required_options, CHECK_FOR_ALL
 from ..database.logic import load_game
 from ..reporting import load_game_information
 from ..analysis.analysis import calculate_normalised_score
@@ -17,6 +17,9 @@ def export_pgn(options):
     :param options: Dictionary of export options
     """
 
+    # Check the required options have been supplied
+    check_required_options(options, [OPT_REFERENCE, OPT_ENGINE, OPT_PGN], CHECK_FOR_ALL)
+
     # Load the game
     game = load_game(options[OPT_REFERENCE])
     if not game:
@@ -28,7 +31,6 @@ def export_pgn(options):
 
     # Get the game headers
     headers = load_game_information(options[OPT_REFERENCE], True, None, False)
-    # TODO: There are better ways to get this!
     result_list = [h[1] for h in headers if h[0] == "Result"]
     result = result_list[0] if result_list else "*"
 
