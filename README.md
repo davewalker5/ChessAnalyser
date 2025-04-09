@@ -17,7 +17,10 @@ It provides the following functionality:
    - The console
    - XLSX spreadsheets
    - DOCX documents
-- Export of PGN files with the evaluations and move annotations included
+- Export of the following:
+   - PGN files with the evaluations and move annotations included
+   - Images (PNG format) of the board at any point in the game
+   - Movies (MP4 format) of the game with or without annotations and evaluations shown per move
 
 The application uses the [python-chess](https://github.com/niklasf/python-chess) library to communicate with the analysis engines and applies the scoring algorithms from [Lichess](https://lichess.org/page/accuracy) and [En Croissant](https://github.com/franciscoBSalgueiro/en-croissant) to the per-move analysis results to score each move.
 
