@@ -207,22 +207,22 @@ def dispatch_command_line(options):
     if options[OPT_VERBOSE] or options[OPT_VERSION]:
         print(f"\n{PROGRAM_NAME} v{PROGRAM_VERSION}")
 
-    # try:
-    if options[OPT_ANALYSE]:
-        analyse_game(options)
-    elif options[OPT_LOAD]:
-        import_pgn(options)
-    elif options[OPT_EXPORT]:
-        dispatch_export(options)
-    elif options[OPT_SEARCH]:
-        search_metadata(options[OPT_SEARCH])
-    elif options[OPT_DELETE]:
-        dispatch_delete(options)
-    else:
-        dispatch_report(options)
+    try:
+        if options[OPT_ANALYSE]:
+            analyse_game(options)
+        elif options[OPT_LOAD]:
+            import_pgn(options)
+        elif options[OPT_EXPORT]:
+            dispatch_export(options)
+        elif options[OPT_SEARCH]:
+            search_metadata(options[OPT_SEARCH])
+        elif options[OPT_DELETE]:
+            dispatch_delete(options)
+        else:
+            dispatch_report(options)
 
-    # except Exception as e:
-    #     print(str(e))
+    except Exception as e:
+        print(str(e))
 
 
 
