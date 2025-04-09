@@ -17,6 +17,9 @@ engine installation documentation for details).
 
 You will be prompted to confirm the deletion before the data is deleted.
 
+By default, deletion is silent but the "--verbose" option can be added to the above command to produce more
+verbose output.
+
 Deleting All Analyses For a Game
 --------------------------------
 
@@ -28,6 +31,9 @@ To delete all analyses of a game, irrespective of the engine used, run the follo
 
 You will be prompted to confirm the deletion before the data is deleted.
 
+By default, deletion is silent but the "--verbose" option can be added to the above command to produce more
+verbose output.
+
 Deleting All Data for a Game
 ----------------------------
 
@@ -38,3 +44,6 @@ To delete all data relating to a game, run the following command:
     run.sh --delete --reference "<unique-game-reference>"
 
 You will be prompted to confirm the deletion before the data is deleted.
+
+By default, deletion is silent but the "--verbose" option can be added to the above command to produce more
+verbose output.
