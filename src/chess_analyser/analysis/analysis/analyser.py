@@ -1,4 +1,5 @@
-from ...constants import INITIAL_SCORE, OPT_REFERENCE, OPT_ENGINE, OPT_VERBOSE, get_player
+from ...constants import INITIAL_SCORE, OPT_REFERENCE, OPT_ENGINE, OPT_VERBOSE
+from ...utils import get_player_for_halfmove
 from ...database.logic import load_game, delete_analysis, create_move_analysis, get_analysis_engine_id
 from ...engines import load_engine_definitions, get_engine_path, get_engine_skip_mate, get_engine_display_name
 from ...reporting import print_analysis_table_headers, print_analysis_table_row
@@ -119,7 +120,7 @@ def analyse_game(options):
     board = chess.Board()
     for move in game.moves:
         # Determine the player making the current move
-        player = get_player(move.halfmove)
+        player = get_player_for_halfmove(move.halfmove)
 
         # Initialise the evaluation
         annotation = ""

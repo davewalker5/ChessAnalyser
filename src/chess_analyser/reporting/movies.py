@@ -1,4 +1,4 @@
-from ..constants import get_player, WHITE
+from ..utils import get_player_for_halfmove, WHITE
 from ..database.logic import load_game, get_analysis_engine_id
 from ..database.models import get_data_path
 from ..engines import load_engine_definitions, get_engine_display_name
@@ -85,7 +85,7 @@ def get_caption(previous_caption, halfmove, san, engine_display_name, analysis):
     :param analysis: Analysis object for the move or None
     """
 
-    player = get_player(halfmove)
+    player = get_player_for_halfmove(halfmove)
     if player == WHITE:
         # For white, the previous caption is empty so build the annotation for the move
         # from scratch 

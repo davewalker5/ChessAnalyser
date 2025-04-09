@@ -1,6 +1,7 @@
 from .constants import ANALYSIS_HEADERS, SUMMARY_HEADERS, WIN_CHANCE_HEADERS
 from .game_info import load_game_information
-from ..constants import OPT_ENGINE, OPT_REFERENCE, OPT_WHITE, OPT_BLACK, WHITE, BLACK
+from ..constants import OPT_ENGINE, OPT_REFERENCE, OPT_WHITE, OPT_BLACK
+from ..utils import WHITE, BLACK
 from ..database.logic import load_analysis, get_analysis_engine_id, list_players, list_metadata_items
 from ..analysis.calculations import calculate_summary_statistics, calculate_win_chance_chart_data, extract_player_analysis
 

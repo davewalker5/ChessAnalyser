@@ -1,4 +1,5 @@
-from ..constants import INITIAL_SCORE, WHITE, OPT_REFERENCE, OPT_ENGINE, OPT_PGN, get_player
+from ..constants import INITIAL_SCORE, OPT_REFERENCE, OPT_ENGINE, OPT_PGN
+from ..utils import get_player_for_halfmove, WHITE
 from ..database.logic import load_game
 from ..reporting import load_game_information
 from ..analysis.analysis import calculate_normalised_score
@@ -62,7 +63,7 @@ def export_pgn(options):
             evaluation = f"{{[%eval {evaluations[i]}]}}" if evaluations[i] else ""
 
             # Format the move text based on which player has the current turn
-            player = get_player(i + 1)
+            player = get_player_for_halfmove(i + 1)
             if player == WHITE:
                 move_text = f"{1 + i // 2}. {move.san}{annotations[i]} {evaluation} "
             else:

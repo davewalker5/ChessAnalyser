@@ -1,4 +1,4 @@
-from ...constants import WHITE
+from ...utils import WHITE
 import math
 
 

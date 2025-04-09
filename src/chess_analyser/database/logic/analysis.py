@@ -2,7 +2,7 @@
 Move analysis database logic
 """
 
-from ...constants import get_player
+from ...utils import get_player_for_halfmove
 from ..models import Session, Analysis, Game
 from .games import load_game
 
@@ -105,7 +105,7 @@ def load_analysis(identifier, analysis_engine_id):
         analysis.append([
             1 + i // 2,
             1 + i,
-            get_player(1 + i),
+            get_player_for_halfmove(1 + i),
             move.san,
             move_analysis.annotation,
             move.uci,

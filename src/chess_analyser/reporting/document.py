@@ -1,4 +1,5 @@
-from ..constants import WHITE, BLACK, OPT_ENGINE, OPT_REFERENCE, OPT_DOCX
+from ..constants import OPT_ENGINE, OPT_REFERENCE, OPT_DOCX
+from ..utils import WHITE, BLACK
 from ..database.logic import load_analysis, get_analysis_engine_id, MOVE_INDEX, SAN_INDEX, ANNOTATION_INDEX, \
     EVALUATION_INDEX, CP_LOSS_INDEX, WIN_PERCENT_INDEX, ACCURACY_INDEX
 from .constants import ANALYSIS_HEADERS, SUMMARY_HEADERS
