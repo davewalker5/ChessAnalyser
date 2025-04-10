@@ -24,5 +24,5 @@ def check_required_options(options, required, mode):
             raise ValueError(message)
 
     if mode == CHECK_FOR_ONE and number_specified != 1:
-        message = f"One of {", ".join(required)} is required but {number_specified} were specified"
+        message = f"One of {', '.join(required)} is required but {number_specified} were specified"
         raise ValueError(message)
