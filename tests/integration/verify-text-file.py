@@ -37,7 +37,7 @@ modification_date = datetime.datetime.fromtimestamp(modification_timestamp)
 
 # Set up the command line parser
 parser = argparse.ArgumentParser(
-    prog=f"{path.stem} {modification_date.strftime("%Y-%m-%d %H:%M:%S")}",
+    prog=f"{path.stem} {modification_date.strftime('%Y-%m-%d %H:%M:%S')}",
     description="Integration Test Text Table Verifier"
 )
 
