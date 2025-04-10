@@ -8,9 +8,13 @@ from .images import export_board_image_after_halfmoves, export_win_percent_chart
 from .game_info import load_game_information
 from docx import Document
 from docx.shared import Pt
+from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.oxml import OxmlElement
 from pathlib import Path
 
 REPORT_FONT_SIZE = 9
+BOARD_IMAGE_SCALE_FACTOR = 0.5
+WIN_CHANCE_CHART_SCALE_FACTOR = 0.75
 
 
 def get_analysis_table_headers_for_report_document():
@@ -69,19 +73,25 @@ def add_table_to_analysis_document(document, headers, table_data):
 
     # Create the table
     table = document.add_table(rows=rows + 1, cols=columns)
+    table.style = "Light Shading Accent 1"
 
     # Populate the headers
     for i, header in enumerate(headers):
         table.rows[0].cells[i].text = header
+
+    # Set table row properties to indicate that the first row as the table header to be repeated
+    # on each page if the table flows over the bottom of a page
+    tbl_header = OxmlElement('w:tblHeader')
+    first_row_props = table.rows[0]._element.get_or_add_trPr()
+    first_row_props.append(tbl_header)
 
     # Populate the rows
     for i, data in enumerate(table_data):
         for j, value in enumerate(data):
             table.rows[1 + i].cells[j].text = f"{value:.2f}" if isinstance(value, float) else str(value)
 
-    # Style and autofit the table
+    # Autofit the table
     table.autofit = True
-    table.style = "Light Shading Accent 1"
 
 
 def export_analysis_document(options):
@@ -133,30 +143,27 @@ def export_analysis_document(options):
     # Add the document title
     document.add_heading(f"Analysis of Game '{options[OPT_REFERENCE]}'", 0)
 
-    # Add the image of the board
-    paragraph = document.add_paragraph()
-    run = paragraph.add_run()
-    run.add_picture(board_position_image)
-
     # Add the game information
     info = load_game_information(options[OPT_REFERENCE], False, options[OPT_ENGINE], True)
     if info:
         document.add_heading(f"Game Information", level=1)
         add_table_to_analysis_document(document, ["Item", "Value"], info)
 
-    # Move to the next page
-    document.add_page_break()
-
     # Add the summary statistics table
     document.add_heading(f"Analysis Summary", level=1)
     add_table_to_analysis_document(document, SUMMARY_HEADERS, summary_statistics)
 
-    # Add the win chance chart
-    document.add_heading(f"Win % Chart", level=1)
-    document.add_paragraph("")
+    # Add the image of the board
+    document.add_heading(f"Final Position", level=1)
     paragraph = document.add_paragraph()
     run = paragraph.add_run()
-    run.add_picture(win_percent_image)
+    picture = run.add_picture(board_position_image)
+    picture.width = int(BOARD_IMAGE_SCALE_FACTOR * picture.width)
+    picture.height = int(BOARD_IMAGE_SCALE_FACTOR * picture.height)
+    paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+    # Move to the next page
+    # document.add_page_break()
 
     # Add the two analysis tables, one for each player
     headers = get_analysis_table_headers_for_report_document()
@@ -164,6 +171,16 @@ def export_analysis_document(options):
         player_analysis = get_player_analysis_for_report_document(analysis, player)
         document.add_heading(f"Analysis for {player}", level=1)
         add_table_to_analysis_document(document, headers, player_analysis)
+
+    # Add the win chance chart
+    document.add_heading(f"Win % Chart", level=1)
+    document.add_paragraph("")
+    paragraph = document.add_paragraph()
+    run = paragraph.add_run()
+    picture = run.add_picture(win_percent_image)
+    picture.width = int(WIN_CHANCE_CHART_SCALE_FACTOR * picture.width)
+    picture.height = int(WIN_CHANCE_CHART_SCALE_FACTOR * picture.height)
+    paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
     # Save the report
     document.save(options[OPT_DOCX])
