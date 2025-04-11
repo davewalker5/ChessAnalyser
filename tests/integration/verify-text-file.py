@@ -9,19 +9,19 @@ REQUIRED = "required"
 # Note that headers in the definitions are *after* removal of spaces
 DEFINITIONS = {
     "results": {
-        HEADERS: ["#", "Halfmove", "Player", "SAN", "Annotation", "Move", "Previous", "Score", "Evaluation", "CPL", "Win%", "Accuracy%"],
-        TYPES: [int, int, str, str, str, str, int, int, str, int, float, float],
-        REQUIRED: [True, True, True, True, False, True, True, True, False, True, True, True]
+        HEADERS: ["#", "Halfmove", "Player", "SAN", "Annotation", "Move", "Engine", "Previous", "Score", "Evaluation", "CPL", "Win%", "Accuracy%"],
+        TYPES: [int, int, str, str, str, str, str, int, int, str, int, float, float],
+        REQUIRED: [True, True, True, True, False, True, True, True, True, False, True, True, True]
     },
     "summary": {
-        HEADERS: ["Player", "ACPL", "Accuracy%", "?!", "?", "??"],
-        TYPES: [str, float, float, int, int, int],
-        REQUIRED: [True, True, True, True, True, True]
+        HEADERS: ["Player", "Engine", "ACPL", "Accuracy%", "?!", "?", "??"],
+        TYPES: [str, str, float, float, int, int, int],
+        REQUIRED: [True, True, True, True, True, True, True]
     },
     "winchance": {
-        HEADERS: ["#", "WinChance"],
-        TYPES: [int, float],
-        REQUIRED: [True, True]
+        HEADERS: ["#", "Engine", "WinChance"],
+        TYPES: [int, str, float],
+        REQUIRED: [True, True, True]
     },
     "info": {
         HEADERS: ["Item", "Value"],

@@ -1,6 +1,6 @@
 from ...utils import WHITE, BLACK
 from ...database.logic import PLAYER_INDEX, CP_LOSS_INDEX, ACCURACY_INDEX, ANNOTATION_INDEX, \
-    WIN_PERCENT_INDEX
+    WIN_PERCENT_INDEX, ENGINE_INDEX
 import statistics
 
 
@@ -24,6 +24,7 @@ def calculate_summary_statistics(analysis):
     for player in [WHITE, BLACK]:
         # Extract the analysis for this player
         player_analysis = extract_player_analysis(analysis, player)
+        engine = player_analysis[0][ENGINE_INDEX]
         cp_losses = [a[CP_LOSS_INDEX] for a in player_analysis]
         accuracies = [a[ACCURACY_INDEX] for a in player_analysis if a[ACCURACY_INDEX] > 0]
         annotations = [a[ANNOTATION_INDEX] for a in player_analysis if a[ANNOTATION_INDEX]]
@@ -39,6 +40,7 @@ def calculate_summary_statistics(analysis):
 
         summary_statistics.append([
             player,
+            engine,
             acpl,
             accuracy,
             dubious,

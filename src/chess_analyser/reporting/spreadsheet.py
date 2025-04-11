@@ -1,5 +1,5 @@
 from ..constants import OPT_ENGINE, OPT_REFERENCE, OPT_XLSX, OPT_VERBOSE
-from ..database.logic import load_analysis, get_analysis_engine_id
+from ..database.logic import load_analysis, get_analysis_engine_id, ENGINE_INDEX
 from .constants import ANALYSIS_HEADERS, SUMMARY_HEADERS, WIN_CHANCE_HEADERS
 from ..analysis.calculations import calculate_win_chance_chart_data, calculate_summary_statistics, extract_player_analysis
 from .game_info import load_game_information
@@ -105,6 +105,7 @@ def export_analysis_spreadsheet(options):
     # Load the analysis results
     analysis_engine_id = get_analysis_engine_id(options[OPT_ENGINE])
     analysis = load_analysis(options[OPT_REFERENCE], analysis_engine_id)
+    engine = analysis[0][ENGINE_INDEX]
 
     # Calculate summary statistics and extract the white and black player analyses from the
     # combined analysis
@@ -121,7 +122,7 @@ def export_analysis_spreadsheet(options):
     if options[OPT_VERBOSE]:
         print("Generating win chance data ...")
     chart_data = calculate_win_chance_chart_data(analysis)
-    chart_table = [[i + 1, x] for i, x in enumerate(chart_data)]
+    chart_table = [[i + 1, engine, x] for i, x in enumerate(chart_data)]
 
     # Get the game information
     info = load_game_information(options[OPT_REFERENCE], False, options[OPT_ENGINE], True)
@@ -159,7 +160,7 @@ def export_analysis_spreadsheet(options):
     })
 
     chart.add_series({
-        "values": f"='{WIN_CHANCE_TITLE}'!$B$1:$B${len(chart_data)}"
+        "values": f"='{WIN_CHANCE_TITLE}'!$C$1:$C${len(chart_data)}"
     })
 
     worksheet = workbook.add_chartsheet(WIN_CHANCE_CHART_TITLE)
