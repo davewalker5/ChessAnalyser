@@ -5,15 +5,17 @@ Move analysis database logic
 from ...utils import get_player_for_halfmove
 from ..models import Session, Analysis, Game
 from .games import load_game
+from .analysis_engines import get_analysis_engine
 
 MOVE_INDEX = 0
 SAN_INDEX = 3
 PLAYER_INDEX = 2
 ANNOTATION_INDEX = 4
-EVALUATION_INDEX = 8
-CP_LOSS_INDEX = 9
-WIN_PERCENT_INDEX = 10
-ACCURACY_INDEX = 11
+ENGINE_INDEX = 6
+EVALUATION_INDEX = 9
+CP_LOSS_INDEX = 10
+WIN_PERCENT_INDEX = 11
+ACCURACY_INDEX = 12
 
 
 def create_move_analysis(analysis_engine_id, move_id, previous_score, score, cpl, win_percent, accuracy, evaluation, annotation):
@@ -87,6 +89,11 @@ def load_analysis(identifier, analysis_engine_id):
     :return: List of analysis records, expressed as lists
     """
 
+    # Get the analysis engine details
+    engine = get_analysis_engine(analysis_engine_id)
+    if not engine:
+        raise ValueError(f"Analysis engine with ID {analysis_engine_id} not found")
+
     # Load the game
     game = load_game(identifier)
     if not game:
@@ -109,6 +116,7 @@ def load_analysis(identifier, analysis_engine_id):
             move.san,
             move_analysis.annotation,
             move.uci,
+            engine.name,
             move_analysis.previous_score,
             move_analysis.score,
             move_analysis.evaluation,

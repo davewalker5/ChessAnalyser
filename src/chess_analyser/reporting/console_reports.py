@@ -2,12 +2,12 @@ from .constants import ANALYSIS_HEADERS, SUMMARY_HEADERS, WIN_CHANCE_HEADERS
 from .game_info import load_game_information
 from ..constants import OPT_ENGINE, OPT_REFERENCE, OPT_WHITE, OPT_BLACK
 from ..utils import WHITE, BLACK, check_required_options, CHECK_FOR_ALL
-from ..database.logic import load_analysis, get_analysis_engine_id, list_players, list_metadata_items
+from ..database.logic import load_analysis, get_analysis_engine_id, list_players, list_metadata_items, ENGINE_INDEX
 from ..analysis.calculations import calculate_summary_statistics, calculate_win_chance_chart_data, extract_player_analysis
 
-ANALYSIS_COLUMN_WIDTHS = [4, 8, 6, 6, 10, 4, 10, 10, 10, 4, 10, 10]
-SUMMARY_COLUMN_WIDTHS = [6, 10, 10, 4, 4, 4]
-WIN_CHANCE_COLUMN_WIDTHS = [4, 10]
+ANALYSIS_COLUMN_WIDTHS = [4, 8, 6, 6, 10, 4, 15, 10, 10, 10, 4, 10, 10]
+SUMMARY_COLUMN_WIDTHS = [6, 15, 10, 10, 4, 4, 4]
+WIN_CHANCE_COLUMN_WIDTHS = [4, 15, 10]
 
 def _load_analysis(options):
     """
@@ -144,14 +144,15 @@ def tabulate_win_chance(options):
     # Check the command line options
     check_required_options(options, [OPT_ENGINE, OPT_REFERENCE], CHECK_FOR_ALL)
 
-    # Load the analysis for the game and engine
+    # Load the analysis for the game and engine and capture the engine name
     analysis = _load_analysis(options)
+    engine = analysis[0][ENGINE_INDEX]
 
     # Use it to calculate the Win Chance data
     win_chance_data = calculate_win_chance_chart_data(analysis)
 
     # Print the results
-    data = [[i, chance] for i, chance in enumerate(win_chance_data)]
+    data = [[i, engine, chance] for i, chance in enumerate(win_chance_data)]
     tabulate_data(data, WIN_CHANCE_HEADERS, WIN_CHANCE_COLUMN_WIDTHS)
 
 

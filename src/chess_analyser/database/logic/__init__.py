@@ -6,7 +6,7 @@ from .moves import create_move, delete_moves
 from .analysis_engines import create_analysis_engine, get_analysis_engine, get_analysis_engine_id
 from .analysis import create_move_analysis, delete_analysis, load_analysis
 from .analysis import MOVE_INDEX, SAN_INDEX, PLAYER_INDEX, ANNOTATION_INDEX, EVALUATION_INDEX, \
-    CP_LOSS_INDEX, WIN_PERCENT_INDEX, ACCURACY_INDEX
+    CP_LOSS_INDEX, WIN_PERCENT_INDEX, ACCURACY_INDEX, ENGINE_INDEX
 
 
 __all__ = [
@@ -14,6 +14,7 @@ __all__ = [
     "SAN_INDEX",
     "PLAYER_INDEX",
     "ANNOTATION_INDEX",
+    "ENGINE_INDEX",
     "EVALUATION_INDEX",
     "CP_LOSS_INDEX",
     "WIN_PERCENT_INDEX",

@@ -170,6 +170,7 @@ def analyse_game(options):
                 move.san,
                 annotation,
                 move.uci,
+                engine_display_name,
                 normalised_prev_score,
                 normalised_score,
                 evaluation,

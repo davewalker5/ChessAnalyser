@@ -5,6 +5,7 @@ ANALYSIS_HEADERS = [
         "SAN",
         "Annotation",
         "Move",
+        "Engine",
         "Previous",
         "Score",
         "Evaluation",
@@ -15,6 +16,7 @@ ANALYSIS_HEADERS = [
 
 SUMMARY_HEADERS = [
     "Player",
+    "Engine",
     "ACPL",
     "Accuracy %",
     "?!",
@@ -24,5 +26,6 @@ SUMMARY_HEADERS = [
 
 WIN_CHANCE_HEADERS = [
     "#",
+    "Engine",
     "Win Chance"
 ]
