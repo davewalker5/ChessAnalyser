@@ -1,7 +1,8 @@
 from .players import create_player, get_player, list_players
 from .games import create_game, load_game, load_games, delete_game
 from .metadata_items import list_metadata_items
-from .metadata_values import create_metadata_value, search_metadata_values, delete_metadata_values
+from .metadata_values import create_metadata_value, search_metadata_values, delete_metadata_values, \
+    update_metadata_value
 from .moves import create_move, delete_moves
 from .analysis_engines import create_analysis_engine, get_analysis_engine, get_analysis_engine_id
 from .analysis import create_move_analysis, delete_analysis, load_analysis
@@ -28,6 +29,7 @@ __all__ = [
     "delete_game",
     "list_metadata_items",
     "create_metadata_value",
+    "update_metadata_value",
     "search_metadata_values",
     "delete_metadata_values",
     "create_move",

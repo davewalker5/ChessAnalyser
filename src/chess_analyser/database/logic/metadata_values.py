@@ -22,6 +22,18 @@ def create_metadata_value(metadata_item_id, game_id, value):
     return metadata_value
 
 
+def update_metadata_value(metadata_value_id, value):
+    """
+    Update a metadata value
+
+    :param metadata_value_id: ID for the metadata value record to update
+    :param value: Value to set
+    """
+    with Session.begin() as session:
+        match = session.query(MetaDataValue).filter(MetaDataValue.id == metadata_value_id).one()
+        match.value = value
+
+
 def search_metadata_values(search_term):
     """
     Search the metadata for values matching the specified search term and return

@@ -1,7 +1,7 @@
 # Version Information
 PROGRAM_NAME = "Chess Analyser"
 PROGRAM_DESCRIPTION = "Game analysis using UCI engines"
-PROGRAM_VERSION = "1.12.0"
+PROGRAM_VERSION = "1.13.0"
 
 # Members of the analysis options dictionary
 OPT_LOAD = "load"
@@ -17,6 +17,8 @@ OPT_INFO = "info"
 OPT_SEARCH = "search"
 OPT_DELETE = "delete"
 OPT_VERSION = "version"
+OPT_SET = "set"
+OPT_LIST_METADATA = "list-metadata"
 
 OPT_ENGINE = "engine"
 OPT_PGN = "pgn"
@@ -27,6 +29,8 @@ OPT_IMAGE = "image"
 OPT_HALFMOVES = "halfmoves"
 OPT_MOVIE = "movie"
 OPT_DURATION = "duration"
+OPT_METADATA = "metadata"
+OPT_VALUE = "value"
 
 OPT_VERBOSE = "verbose"
 

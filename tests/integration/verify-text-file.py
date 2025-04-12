@@ -27,6 +27,11 @@ DEFINITIONS = {
         HEADERS: ["Item", "Value"],
         TYPES: [str, str],
         REQUIRED: [True, False]
+    },
+    "metadata": {
+        HEADERS: ["Item", "Order", "PGN", "Default", "StoredAs"],
+        TYPES: [str, int, bool, str, str],
+        REQUIRED: [True, False, True, False, True]
     }
 }
 
@@ -83,9 +88,10 @@ for i, row in enumerate(table[1:]):
             message = f"Value for mandatory column '{definitions[HEADERS][j]}' missing at row {i + 1}"
             raise ValueError(message)
 
-        # Confirm the type is correct
-        try:
-            _ = definitions[TYPES][j](col)
-        except:
-            message = f"Invalid value '{col}' for '{definitions[HEADERS][j]}' at row {i + 1}"
-            raise ValueError(message)
+        # Confirm the type is correct, if the value's present
+        if col:
+            try:
+                _ = definitions[TYPES][j](col)
+            except:
+                message = f"Invalid value '{col}' for '{definitions[HEADERS][j]}' at row {i + 1}"
+                raise ValueError(message)

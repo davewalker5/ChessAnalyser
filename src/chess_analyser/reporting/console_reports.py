@@ -236,3 +236,23 @@ def tabulate_games(games):
 
     # Tabulate the data
     tabulate_data(data, headers, column_widths)
+
+
+def tabulate_metadata_items():
+    """
+    Tabulate the available metadata items
+    """
+
+    # Construct the 
+    items = list_metadata_items()
+    items_data = [[i.name, i.display_order, i.is_pgn, i.default_value, "Meta Data Value"] for i in items]
+
+    # Construct the final list, including the game reference
+    data = [["Reference", "", False, "", "Game Property"]] + items_data
+
+    # Define the column headers
+    column_widths = [30, 5, 5, 20, 15]
+    headers = ["Item", "Order", "PGN", "Default", "Stored As"]
+
+    # Tabulate the data
+    tabulate_data(data, headers, column_widths)
