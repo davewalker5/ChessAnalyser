@@ -24,6 +24,25 @@ def create_game(reference, white_player_id, black_player_id):
     return game
 
 
+def update_game(id, reference, white_player_id, black_player_id):
+    """
+    Update the properties of an existing game
+
+    :param id: Game ID
+    :param reference: Unique game reference
+    :param white_player_id: White player ID
+    :param black_player_id: Black player ID
+    :returns: An instance of the Game class for the updated record
+    """
+    with Session.begin() as session:
+        game = session.query(Game).get(id)
+        game.reference = reference
+        game.white_player_id = white_player_id
+        game.black_player_id = black_player_id
+
+    return game
+
+
 @singledispatch
 def load_game(_):
     """

@@ -23,16 +23,6 @@ def create_player(name, elo, ai):
     return player
 
 
-    """
-    Return the Player instance for the player with the specified identifier
-
-    :param _: Player name or ID
-    :return: Instance of the player
-    :raises ValueError: If the player doesn't exist
-    """
-    raise TypeError("Invalid parameter type")
-
-
 @singledispatch
 def get_player(_):
     """

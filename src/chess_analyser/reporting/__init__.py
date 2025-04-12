@@ -1,5 +1,5 @@
 from .console_reports import print_analysis_table_headers, print_analysis_table_row, tabulate_analysis, tabulate_summary, \
-    tabulate_win_chance, tabulate_players, tabulate_game_info, tabulate_games
+    tabulate_win_chance, tabulate_players, tabulate_game_info, tabulate_games, tabulate_metadata_items
 from .document import export_analysis_document
 from .images import export_current_position_image, export_board_image_after_halfmoves, export_win_percent_chart_image, \
     export_board_image
@@ -18,6 +18,7 @@ __all__ = [
     "tabulate_players",
     "tabulate_game_info",
     "tabulate_games",
+    "tabulate_metadata_items",
     "export_analysis_document",
     "export_current_position_image",
     "export_board_image_after_halfmoves",
