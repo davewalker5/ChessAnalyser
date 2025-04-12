@@ -32,6 +32,11 @@ DEFINITIONS = {
         HEADERS: ["Item", "Order", "PGN", "Default", "StoredAs"],
         TYPES: [str, int, bool, str, str],
         REQUIRED: [True, False, True, False, True]
+    },
+    "players": {
+        HEADERS: ["Id", "Name", "ELO", "AI"],
+        TYPES: [int, str, int, bool],
+        REQUIRED: [True, True, True, True]
     }
 }
 

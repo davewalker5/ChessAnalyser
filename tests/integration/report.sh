@@ -45,3 +45,9 @@ fi
 if [ $? -ne 0 ]; then
     exit 1
 fi
+
+/bin/bash "$PROJECT_ROOT/run.sh" --players &> "$TEST_RESULTS_FOLDER/players.txt"
+/bin/bash "$INTEGRATION_TESTS_FOLDER/verify.sh" "$TEST_RESULTS_FOLDER/players.txt" players
+if [ $? -ne 0 ]; then
+    exit 1
+fi
