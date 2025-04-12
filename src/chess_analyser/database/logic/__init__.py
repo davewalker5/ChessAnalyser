@@ -1,5 +1,5 @@
 from .players import create_player, get_player, list_players
-from .games import create_game, load_game, load_games, delete_game
+from .games import create_game, load_game, load_games, delete_game, update_game
 from .metadata_items import list_metadata_items
 from .metadata_values import create_metadata_value, search_metadata_values, delete_metadata_values, \
     update_metadata_value
@@ -27,6 +27,7 @@ __all__ = [
     "load_game",
     "load_games",
     "delete_game",
+    "update_game",
     "list_metadata_items",
     "create_metadata_value",
     "update_metadata_value",
