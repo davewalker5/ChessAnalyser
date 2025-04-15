@@ -2,10 +2,11 @@ Database Configuration
 ======================
 
 .. note::
-    The analyser includes an "alembic.sh" script at the top of the project folder structure. This sets up
+    The analyser includes an "alembic" script at the top of the project folder structure. This sets up
     the Virtual Environment and creates a new "chess.db" database in the "data" sub-folder or apply
     the latest updates to the copy of the database in that folder. This simplifies managing the database
-    so it's recommended, though not mandatory, to use it. This document assumes it is being used.
+    so it's recommended, though not mandatory, to use it. This document assumes it is being used. For
+    OSX/Linux, the script is called "run_alembic.sh" and for Windows it is called "run_alembic.bat"
 
 
 Database Schema
@@ -74,7 +75,7 @@ a new, empty, database can be created by running the following from the top-leve
 
 .. code-block:: bash
 
-    ./alembic.sh
+    ./run_alembic.sh
 
 Alembic should run and create the database in the "data" sub-folder, creating that folder first if it
 doesn't exist.
@@ -96,7 +97,7 @@ Then run the following from the top-level folder of the project:
 
 .. code-block:: bash
 
-    ./alembic.sh
+    ./run_alembic.sh
 
 Alembic should run and report any updates applied to the database file.
 

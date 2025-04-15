@@ -8,4 +8,4 @@ cd $PROJECT_ROOT
 # Remove and re-create the chess database data folder, if it exists
 export PYTHONPATH="$PROJECT_ROOT/src"
 rm -f "$PROJECT_ROOT/data/chess.db"
-. "$PROJECT_ROOT/alembic.sh"
+. "$PROJECT_ROOT/run_alembic.sh"

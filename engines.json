@@ -41,7 +41,7 @@
         "executable": {
             "Linux": "Dragon/Linux/dragon-linux",
             "Darwin": "Dragon/OSX/dragon-osx",
-            "Windows": ""
+            "Windows": "Dragon\\Windows\\dragon-64bit.exe"
         }
     },
     "defenchess": {
@@ -77,7 +77,7 @@
         "executable": {
             "Linux": "Komodo/Linux/komodo-14.1-linux",
             "Darwin": "Komodo/OSX/komodo-14.1-64-osx",
-            "Windows": ""
+            "Windows": "Komodo\\Windows\\komodo-14.1-64bit.exe"
         }
     },
     "laser": {
@@ -95,7 +95,7 @@
         "executable": {
             "Linux": "RubiChess/Linux/RubiChess-20240817_x86-64",
             "Darwin": "RubiChess/OSX/RubiChess",
-            "Windows": ""
+            "Windows": "RubiChess\\windows\\RubiChess-20240817_x86-64.exe"
         }
     },
     "simbelmyne": {
@@ -113,7 +113,7 @@
         "executable": {
             "Linux": "Stockfish/Linux/stockfish-ubuntu-x86-64-avx2",
             "Darwin": "Stockfish/OSX/stockfish",
-            "Windows": ""
+            "Windows": "Stockfish\\Windows\\stockfish-windows-x86-64-avx2.exe"
         }
     },
     "wasp": {

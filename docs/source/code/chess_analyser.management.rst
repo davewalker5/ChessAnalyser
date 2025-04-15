@@ -12,6 +12,14 @@ chess\_analyser.management.delete module
    :show-inheritance:
    :undoc-members:
 
+chess\_analyser.management.metadata module
+------------------------------------------
+
+.. automodule:: chess_analyser.management.metadata
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 Module contents
 ---------------
 
