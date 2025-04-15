@@ -153,3 +153,4 @@ tests/results/
 chess.db
 example.pgn
 clean.sh
+clean.bat
