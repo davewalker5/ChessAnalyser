@@ -6,7 +6,7 @@ from ..database.logic import load_analysis, get_analysis_engine_id, list_players
 from ..analysis.calculations import calculate_summary_statistics, calculate_win_chance_chart_data, extract_player_analysis
 
 ANALYSIS_COLUMN_WIDTHS = [4, 8, 6, 6, 10, 4, 15, 10, 10, 10, 4, 10, 10]
-SUMMARY_COLUMN_WIDTHS = [6, 15, 10, 10, 4, 4, 4]
+SUMMARY_COLUMN_WIDTHS = [6, 15, 10, 10, 5, 4, 4, 4]
 WIN_CHANCE_COLUMN_WIDTHS = [4, 15, 10]
 
 def _load_analysis(options):

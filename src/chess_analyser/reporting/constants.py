@@ -19,6 +19,7 @@ SUMMARY_HEADERS = [
     "Engine",
     "ACPL",
     "Accuracy %",
+    "ELO",
     "?!",
     "?",
     "??"
