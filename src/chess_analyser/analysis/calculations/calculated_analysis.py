@@ -2,6 +2,7 @@ from ...utils import WHITE, BLACK
 from ...database.logic import PLAYER_INDEX, CP_LOSS_INDEX, ACCURACY_INDEX, ANNOTATION_INDEX, \
     WIN_PERCENT_INDEX, ENGINE_INDEX
 import statistics
+import math
 
 
 def extract_player_analysis(analysis, player):
@@ -29,9 +30,10 @@ def calculate_summary_statistics(analysis):
         accuracies = [a[ACCURACY_INDEX] for a in player_analysis if a[ACCURACY_INDEX] > 0]
         annotations = [a[ANNOTATION_INDEX] for a in player_analysis if a[ANNOTATION_INDEX]]
 
-        # Calculate the ACPL and overall accuracy
+        # Calculate the ACPL, overall accuracy and estimated ELO
         acpl = statistics.mean(cp_losses)
         accuracy = statistics.harmonic_mean(accuracies)
+        elo = int(3100.0 * math.exp(-0.001 * acpl))
 
         # Calculate the counts for each annotation type
         dubious = len([a for a in annotations if a == "?!"])
@@ -43,6 +45,7 @@ def calculate_summary_statistics(analysis):
             engine,
             acpl,
             accuracy,
+            elo,
             dubious,
             mistakes,
             blunders

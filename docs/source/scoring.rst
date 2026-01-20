@@ -108,6 +108,15 @@ ACPL Calculation
     acpl = statistics.mean(cp_losses)
 
 
+ELO Estimation
+--------------
+
+- ELO is estimated from the ACPL using the following estimation [#3]_, [#4]_:
+
+.. math::
+
+   \mathrm{ELO} = 3100 e^{-0.01 \,\mathrm{ACPL}}
+
 Overall Accuracy Calculation
 ----------------------------
 
@@ -127,3 +136,5 @@ References
 
 .. [#1] `Lichess accuracy calculation <https://lichess.org/page/accuracy>`_
 .. [#2] `En Croissant <https://github.com/franciscoBSalgueiro/en-croissant>`_
+.. [#3] `Estimating ELO using ACPL <https://lichess.org/forum/general-chess-discussion/how-to-estimate-your-elo-for-a-game-using-acpl-and-what-it-realistically-means?utm_source=chatgpt.com>`_
+.. [#4] "Using Heuristic-Search Based Engines for Estimating Human Skill at Chess", Matej Guid, Ivan Bratko, 2011
