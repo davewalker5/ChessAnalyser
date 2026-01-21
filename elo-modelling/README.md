@@ -34,10 +34,7 @@ This model is intended as an **interpretive and comparative tool**, not a replac
 Performance is modelled using an exponential decay function:
 
 $$
-\text{Elo}_{\text{est}}(a)
-= R_{\min}
-+ (R_{\max} - R_{\min})
-\cdot e^{-k \cdot (a - a_{\text{best}})}
+\text{Elo}_{\text{est}}(a) = R_{\min} + (R_{\max} - R_{\min}) \cdot e^{-k \cdot (a - a_{\text{best}})}
 $$
 
 ### Parameters
