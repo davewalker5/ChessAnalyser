@@ -106,3 +106,31 @@ A linear model would imply that every additional centipawn of error costs the *s
 - Robust performance estimation without opponent ratings
 
 For these reasons, an exponential model provides a good balance between simplicity, interpretability, and empirical realism.
+
+## The Multi-Engine Model
+
+The ACPL calculation uses CPL values from the move analysis from each engine. That CPL is calculated on an internal scale specific to the engine so the ACPL calculated from analyses completed by different engines are not directly comparable. To make them comparable, we first need to:
+
+1. Select an ANCHOR engine
+2. Calculate the mean (average, or typical) ACPL for that engine
+3. Calculate the standard deviarion (spread) of ACPL for that engine
+
+The Z-score included in the player ACPL data frame indicates how good or bad a specific game was compared to what the engine used to analyse that game usually reports:
+
+| Z-Score | Meaning                                    |
+| ------- | ------------------------------------------ |
+| 0       | An average game for the engine in question |
+| +1      | 1 standard deviation worse than average    |
+| -1      | 1 standard deviation better than average   |
+
+The Z-scores are used to effectively "map" the ACPL calculated from an analysis completed by a different engine onto the same scale as the anchor engine:
+
+$$
+\text{ACPL}_{\text{engine}} = \mu_{\text{anchor}} + z \cdot \sigma_{\text{anchor}}
+$$
+
+This equation does the following:
+
+1. Start at the anchor engine's mean
+2. Move up or down by the number of standard deviations indicated by the Z-score
+3. But measured in units of the anchor engine's standard deviation
