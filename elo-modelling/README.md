@@ -25,7 +25,7 @@ This model is intended as an interpretive and comparative tool, not a replacemen
 
 - Lower ACPL means stronger play  
 - ACPL is engine-dependent, so:
-  - Use a single engine first (this notebook)
+  - Use a single engine first (simgle-engine notebook)
   - Normalise across engines (multi-engine notebook)
 - The *shape* of the relationship matters more than the absolute scale
 
@@ -40,9 +40,9 @@ $$
 ### Parameters
 
 - a = ACPL for a given game
-- a(best) = ACPL corresponding to your strongest games (typically the 5th percentile)
-- R(max) = rating assigned to your strongest performances
-- R(min) = rating assigned to your weakest performances
+- a(best) = ACPL corresponding to the strongest games (typically the 5th percentile)
+- R(max) = rating assigned to the strongest performances
+- R(min) = rating assigned to the weakest performances
 - k = decay constant controlling how quickly performance drops as ACPL increases
 
 ### Interpreting the Parameters
@@ -86,16 +86,16 @@ The model assumes that each additional unit of ACPL causes a fixed percentage lo
 The exponential form of the model ensures that:
 
 - Performance is bounded between R(min) and R(max)
-- The curve is smooth and monotonic
+- The curve is smooth
 - The largest rating drops occur at low ACPL values
-- Tater ACPL increases have diminishing impact
+- Later ACPL increases have diminishing impact
 
 ### Why not linear?
 
 A linear model would imply that every additional centipawn of error costs the *same* amount of strength but this is not consistent with observed play:
 
 - Elite games cluster at very low ACPL
-- Small errors at that level are decisive
+- Small errors at that level are, or can be, decisive
 - Large ACPL values mostly reflect already-lost positions
 
 ### Practical benefits
