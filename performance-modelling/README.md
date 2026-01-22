@@ -53,7 +53,7 @@ If the aim is analysis of personal playing strength over time, ACPL alone has so
 
 In contrast, the playing strength models transform ACPL into a rating-like strength estimate, naturally compressing extreme values and making averaging a meaningful summary of typical performance.
 
-The advantages of modelling playing srength are:
+The advantages of modelling playing strength are:
 
 - A single, stable, engine-agnostic performance scale
 - Meaningful aggregation and trend analysis over time
