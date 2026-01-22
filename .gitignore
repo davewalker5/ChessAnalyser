@@ -154,3 +154,4 @@ chess.db
 example.pgn
 clean.sh
 clean.bat
+exported/
