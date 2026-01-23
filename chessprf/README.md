@@ -1,18 +1,27 @@
 # Overview
 
-The Chess Performance Calculator that prompts for an ACPL and then uses the personal performance models presented in the "performance-modelling" folder to calculate a performance rating, that it then outputs alongside the ACPL.
+The Chess Performance Calculator that prompts ACPL and game length for a game and then uses the personal performance models presented in the "performance-modelling" folder to calculate a performance rating.
 
 It's designed to work on a *"TI-84 Plus CE-T Python Edition"* calculator, as that makes it highly portable, though space limitations on the device mandate that the interface, while functional, is extremely simple. It will also run on a desktop machine or laptop if required.
 
 # Configuring the Calculator
 
-First, run the appropriate model (single or multi-engine) and capture the values for R_MIN, R_MAX, K and ACPL_best. These values needed to be set at the top of the *chessprf.py* script, per the following example:
+First, run the appropriate model (single or multi-engine) and capture the values for the following:
+
+- Short-game threshold
+- ACPL floor values
+- Model parameters R_MIN, R_MAX, K and ACPL_best
+
+These values needed to be set at the top of the *chessprf.py* script, per the following example:
 
 ```
+MOVES_SHORT = 25
+ACPL_MIN_SHORT = 25
+ACPL_MIN_NORMAL = 20
 R_MIN = 800
 R_MAX = 2300
-K = 0.0485420171014147
-ACPL_BEST = 13.383123697788
+K = 0.05341958625524604
+ACPL_BEST = 23.709467837259233
 ```
 
 # Running the Calculator on the Desktop
@@ -30,14 +39,15 @@ The output, including an example, should look something like this:
 Chess Performance Calculator
 ============================
 
-ACPL? 28.6
+ACPL? 26.89
+Moves? 18
 
-ACPL 28.6 => Rating 1517
+Performance rating = 2066
 
 ACPL? 
 ```
 
-To exit the application, just hit "ENTER" in response to the "ACPL?" prompt
+To exit the application, just hit "ENTER" in response to one of the "ACPL?" or "Moves?" prompts.
 
 # Transferring to the Calculator
 

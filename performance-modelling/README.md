@@ -168,3 +168,23 @@ This equation does the following:
 1. Start at the anchor engine's mean
 2. Move up or down by the number of standard deviations indicated by the Z-score
 3. But measured in units of the anchor engine's standard deviation
+
+## Handling Low ACPL - ACPL Floor
+
+There are a number of scenarios that can result in excessively low ACPL:
+
+| Scenario                                     | Impact on ACPL                                          |
+| -------------------------------------------- | ------------------------------------------------------- |
+| Opening theory / book lines                  | Many engine-equal moves, little ACPL accumulation       |
+| Early opponent blunder                       | Game becomes easy; many moves are “equally winning”     |
+| Large evaluation advantage                   | Engine tolerance rises once the position is clearly won |
+| Short games                                  | Too few moves for errors to register meaningfully       |
+| Forced lines / tactics                       | Limited choice keeps ACPL artificially low              |
+| Simple conversions & tablebase-like endgames | Most moves score near-zero loss                         |
+| Engine/config effects                        | Depth, time, or engine choice suppresses losses         |
+| Dead or trivial positions                    | Symmetry, fortresses, or locked structures              |
+| Statistical noise at low values              | Below ~5 ACPL, variance dominates signal                |
+
+However, the exponential model is extremely sensitive to low ACPLs, with small changes in ACPL at the lower end of the scale causing disproportionate changes in performance rating. To mitigate against this, the model applies a floor based on the number of moves in the game to the ACPL values calculated from the analysis.
+
+The floor should also be applied at the point where the performance rating is calculated for a given ACPL, for example using the *chessprf* application.

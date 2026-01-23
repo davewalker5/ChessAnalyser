@@ -1,9 +1,12 @@
 from math import exp
 
+MOVES_SHORT = 25
+ACPL_MIN_SHORT = 25
+ACPL_MIN_NORMAL = 20
 R_MIN = 800
 R_MAX = 2300
-K = 0.0485420171014147
-ACPL_BEST = 13.383123697788
+K = 0.05341958625524604
+ACPL_BEST = 23.709467837259233
 
 
 def prompt_for_number(prompt, data_type_name, converter, minimum_value=None, maximum_value=None):
@@ -37,14 +40,17 @@ def prompt_for_number(prompt, data_type_name, converter, minimum_value=None, max
             print("Please enter a valid " + data_type_name)
 
 
-def calculate_performance(acpl):
+def calculate_performance(acpl, game_length):
     """
     Given an ACPL, calculate and return the performance rating
     
     :param acpl: ACPL to use to calculate performance
+    :param game_length: Number of moves in the game
     :return: Numeric performance rating for that ACPL
     """
-    return int(R_MIN + (R_MAX - R_MIN) * exp(-K * (acpl - ACPL_BEST)) + 0.5)
+    acpl_floor = ACPL_MIN_SHORT if game_length < MOVES_SHORT else ACPL_MIN_NORMAL
+    acpl_effective = acpl_floor if acpl < acpl_floor else acpl
+    return int(R_MIN + (R_MAX - R_MIN) * exp(-K * (acpl_effective - ACPL_BEST)) + 0.5)
 
 
 def print_title(title):
@@ -70,10 +76,14 @@ def main():
         if acpl is None:
             return
 
-        performance_rating = calculate_performance(acpl)
+        game_length = prompt_for_number("Moves", "integer", int, 0, None)
+        if game_length is None:
+            return
+
+        performance_rating = calculate_performance(acpl, game_length)
 
         print()
-        print("ACPL " + str(acpl) + " => Rating " + str(performance_rating))
+        print("Performance rating = " + str(performance_rating))
         print()
 
 
