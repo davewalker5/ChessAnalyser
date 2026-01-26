@@ -28,36 +28,18 @@ fi
 # Suppress warnings about the output file extension
 export PYTHONWARNINGS="ignore"
 
-# Define a list of notebooks to skip
-declare -a exclusions=(
-    "analysis.ipynb"
-    "constants.ipynb"
-    "database.ipynb"
-    "export.ipynb"
-    "pathutils.ipynb"
+# Define a list of notebooks to run, in order
+declare -a notebooks=(
+    "multi_engine_performance_model.ipynb"
+    "single_engine_performance_model.ipynb"
+    "performance_over_time.ipynb"
 )
 
-# Get a list of Jupyter Notebooks and iterate over them
-files=$(find `pwd` -name '*.ipynb')
-while IFS= read -r file; do
-    # Get the notebook file name and extension without the path
-    folder=$(dirname "$file")
-    filename=$(basename -- "$file")
-
-    # See if the notebook is in the exclusions list
-    found=0
-    if [[ " ${exclusions[@]} " =~ " $filename " ]]; then
-        echo "Notebook $filename is in the exclusions list and will not be run"
-        found=1
-    fi
-
-    # If this notebook isn't in the exclusions list, run it
-    if [[ found -eq 0 ]]; then
-        cd "$folder"
-        echo "Running notebook $filename ..."
-        papermill "$filename" /dev/null
-    fi
-done <<< "$files"
+# Iterate over them
+for notebook in "${notebooks[@]}"; do
+    echo "Running notebook $filename ..."
+    papermill "$PERFORMANCE_ROOT/$notebook" /dev/null
+done
 
 # Record end time (epoch seconds)
 ENDED=$(date +%s)
