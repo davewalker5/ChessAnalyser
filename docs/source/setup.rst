@@ -7,7 +7,7 @@ Requirements
 The Chess Analysis application requires the following:
 
 - An installation of Python 3
-- A virtual environment with the requirements listed in the "requirements.txt" file installed
+- A virtual environment with the analyser package and dependencies from the root "pyproject.toml" file installed
 - Local copies of the chess engines (see the documentation on engine installation)
 - A configured SQLite database (see the documentation on the database)
 
@@ -23,7 +23,7 @@ Creating a Virtual environment
     ./make_venv.sh
 
 - First, this will deactivate and remove the existing virtual environment, if there is one
-- Then, it will create a new virtual environment and install the requirements
+- Then, it will create a new virtual environment and install the analyser package and its dependencies
 
 Installing Cairo
 ----------------

@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "chess-performance-modelling"
+version = "0.1.0"
+description = "Standalone Jupyter reporting suite for chess performance modelling."
+requires-python = ">=3.11"
+dependencies = [
+    "ipykernel",
+    "ipynbname",
+    "jupyter-server",
+    "matplotlib",
+    "notebook",
+    "numpy",
+    "openpyxl",
+    "pandas",
+    "papermill",
+    "scipy",
+    "sqlparse",
+]
+
+[tool.setuptools]
+py-modules = []

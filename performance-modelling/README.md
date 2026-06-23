@@ -1,5 +1,20 @@
 # Introduction
 
+## Setup
+
+The reporting suite is managed with `pyproject.toml`. To create a fresh local
+environment, run:
+
+```bash
+./make_venv.sh
+```
+
+To update the installed dependencies in an existing environment, run:
+
+```bash
+./update.sh
+```
+
 Official Elo ratings are a population-level ranking system, not a performance analyser, and do not incorporate engine-based analysis or move quality. Ratings are derived solely from game results against rated opponents according to the following formula:
 
 $$
