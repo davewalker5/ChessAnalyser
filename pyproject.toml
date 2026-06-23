@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "chess-analyser"
+version = "1.18.2"
+description = "Command-line analysis of chess games using UCI engines."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [
+    { name = "Dave Walker" },
+]
+dependencies = [
+    "alembic==1.16.4",
+    "CairoSVG==2.8.2",
+    "matplotlib==3.10.5",
+    "moviepy==2.2.1",
+    "pandas==2.3.1",
+    "pillow==11.3.0",
+    "python-chess==1.999",
+    "python-docx==1.2.0",
+    "SQLAlchemy==2.0.42",
+    "xlsxwriter==3.2.5",
+]
+
+[project.scripts]
+chess-analyser = "chess_analyser.cli:handle_command_line"
+
+[tool.setuptools.packages.find]
+where = ["src"]
