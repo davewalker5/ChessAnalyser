@@ -6,15 +6,25 @@ from ..engines import load_engine_definitions, get_engine_display_name
 from .images import export_current_position_image
 import chess
 import os
-from moviepy import ImageClip, TextClip, CompositeVideoClip, concatenate_videoclips
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 import tempfile
+
+try:
+    from moviepy import ImageClip, concatenate_videoclips
+except ImportError:
+    from moviepy.editor import ImageClip, concatenate_videoclips
 
 STARTING_POSITION_IMAGE = "start.png"
 CAPTION_BORDER_HEIGHT = 30
 FONT_PATH = "OpenSans/OpenSans-SemiBold"
 FONT_SIZE = 16
+
+
+def _set_clip_duration(clip, duration):
+    if hasattr(clip, "with_duration"):
+        return clip.with_duration(duration)
+    return clip.set_duration(duration)
 
 
 def _create_image_clip_from_position(board, caption, folder, image_name, duration):
@@ -68,7 +78,7 @@ def _create_image_clip_from_position(board, caption, folder, image_name, duratio
     new_image.save(image_path)
 
     # Create the image clip from the updated image
-    image_clip = ImageClip(image_path).with_duration(duration)
+    image_clip = _set_clip_duration(ImageClip(image_path), duration)
 
     # Delete the image
     Path(image_path).resolve().unlink()
