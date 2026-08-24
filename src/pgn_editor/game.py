@@ -5,6 +5,17 @@ from collections.abc import Iterable
 import chess
 import chess.pgn
 
+PGN_METADATA_DEFAULTS = {
+    "Event": "Unknown",
+    "Site": "?",
+    "Date": "????.??.??",
+    "Round": "?",
+    "White": "?",
+    "Black": "?",
+    "Result": "*",
+}
+VALID_RESULTS = frozenset({"1-0", "0-1", "1/2-1/2", "*"})
+
 
 class MoveRejectedError(ValueError):
     """Raised when a requested move cannot safely be added to the game."""
@@ -24,6 +35,7 @@ class GameModel:
         :param game: Optional parsed game whose main line should be loaded.
         """
         self._game = game if game is not None else self._new_game()
+        self._apply_metadata_defaults()
         self._moves = list(self._game.mainline_moves())
         self._displayed_ply = len(self._moves)
         self._rebuild_board()
@@ -36,17 +48,7 @@ class GameModel:
         :return: Empty standard-position game.
         """
         game = chess.pgn.Game()
-        game.headers.update(
-            {
-                "Event": "?",
-                "Site": "?",
-                "Date": "????.??.??",
-                "Round": "?",
-                "White": "?",
-                "Black": "?",
-                "Result": "*",
-            }
-        )
+        game.headers.update(PGN_METADATA_DEFAULTS)
         return game
 
     @property
@@ -88,6 +90,27 @@ class GameModel:
     def headers(self) -> chess.pgn.Headers:
         """Return a copy of the game's PGN headers."""
         return chess.pgn.Headers(self._game.headers)
+
+    def set_header(self, name: str, value: str) -> bool:
+        """
+        Update an editable PGN metadata value.
+
+        Blank values are replaced with the field's configured default.
+
+        :param name: Standard PGN metadata field name.
+        :param value: New metadata value.
+        :return: Whether the stored value changed.
+        :raises ValueError: If the field or Result value is unsupported.
+        """
+        if name not in PGN_METADATA_DEFAULTS:
+            raise ValueError(f"Unsupported PGN metadata field: {name}")
+        normalised_value = value.strip() or PGN_METADATA_DEFAULTS[name]
+        if name == "Result" and normalised_value not in VALID_RESULTS:
+            raise ValueError("Result must be 1-0, 0-1, 1/2-1/2 or *")
+        if self._game.headers.get(name) == normalised_value:
+            return False
+        self._game.headers[name] = normalised_value
+        return True
 
     def legal_destinations(self, source: chess.Square) -> frozenset[chess.Square]:
         """
@@ -243,6 +266,13 @@ class GameModel:
         node: chess.pgn.GameNode = self._game
         for move in self._moves:
             node = node.add_main_variation(move)
+
+    def _apply_metadata_defaults(self) -> None:
+        """Supply required metadata defaults where values are absent or blank."""
+        for name, default_value in PGN_METADATA_DEFAULTS.items():
+            current_value = self._game.headers.get(name, "").strip()
+            if not current_value or (name == "Event" and current_value == "?"):
+                self._game.headers[name] = default_value
 
 
 def game_from_moves(moves: Iterable[chess.Move]) -> GameModel:

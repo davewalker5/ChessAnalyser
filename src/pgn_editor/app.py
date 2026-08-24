@@ -1,12 +1,19 @@
 """Tk desktop interface for the PGN editor."""
 
 import tkinter as tk
+from calendar import Calendar
+from datetime import UTC, date, datetime
 from pathlib import Path
 from tkinter import filedialog, ttk
 
 import chess
 
-from pgn_editor.game import FutureMovesError, GameModel, MoveRejectedError
+from pgn_editor.game import (
+    PGN_METADATA_DEFAULTS,
+    FutureMovesError,
+    GameModel,
+    MoveRejectedError,
+)
 from pgn_editor.persistence import PgnFileError, load_pgn, save_pgn
 
 APP_BACKGROUND = "#07111f"
@@ -102,6 +109,18 @@ class PgnEditor(tk.Tk):
             font=("TkDefaultFont", 20, "bold"),
         )
         style.configure(
+            "Section.TLabel",
+            background=SURFACE,
+            foreground=TEXT,
+            font=("TkDefaultFont", 14, "bold"),
+        )
+        style.configure(
+            "Metadata.TLabel",
+            background=SURFACE,
+            foreground=MUTED_TEXT,
+            font=("TkDefaultFont", 9, "bold"),
+        )
+        style.configure(
             "Status.TLabel",
             background=SURFACE_RAISED,
             foreground=MUTED_TEXT,
@@ -154,6 +173,22 @@ class PgnEditor(tk.Tk):
             foreground=[("active", APP_BACKGROUND)],
         )
         style.configure(
+            "Calendar.TButton",
+            background=SURFACE_RAISED,
+            foreground=ACCENT,
+            bordercolor=BORDER,
+            lightcolor=SURFACE_RAISED,
+            darkcolor=SURFACE_RAISED,
+            padding=(5, 4),
+            font=("TkDefaultFont", 10, "bold"),
+        )
+        style.map(
+            "Calendar.TButton",
+            background=[("active", "#18384a"), ("pressed", "#1d4654")],
+            foreground=[("active", TEXT)],
+            bordercolor=[("active", ACCENT), ("focus", ACCENT)],
+        )
+        style.configure(
             "Vertical.TScrollbar",
             background=SURFACE_RAISED,
             troughcolor=FIELD_BACKGROUND,
@@ -167,6 +202,34 @@ class PgnEditor(tk.Tk):
             bordercolor=BORDER,
             lightcolor=ACCENT,
             darkcolor=ACCENT,
+        )
+        style.configure(
+            "TEntry",
+            fieldbackground=FIELD_BACKGROUND,
+            foreground=TEXT,
+            insertcolor=ACCENT,
+            bordercolor=BORDER,
+            lightcolor=FIELD_BACKGROUND,
+            darkcolor=FIELD_BACKGROUND,
+            padding=(7, 5),
+        )
+        style.map("TEntry", bordercolor=[("focus", ACCENT)])
+        style.configure(
+            "TCombobox",
+            fieldbackground=FIELD_BACKGROUND,
+            background=SURFACE_RAISED,
+            foreground=TEXT,
+            arrowcolor=ACCENT,
+            bordercolor=BORDER,
+            lightcolor=FIELD_BACKGROUND,
+            darkcolor=FIELD_BACKGROUND,
+            padding=(7, 5),
+        )
+        style.map(
+            "TCombobox",
+            fieldbackground=[("readonly", FIELD_BACKGROUND)],
+            foreground=[("readonly", TEXT)],
+            bordercolor=[("focus", ACCENT)],
         )
 
     def _create_menu(self) -> None:
@@ -217,16 +280,77 @@ class PgnEditor(tk.Tk):
         self.panel = ttk.Frame(container, style="Panel.TFrame", padding=20)
         self.panel.grid(row=0, column=1, sticky="ew")
         self.panel.grid_propagate(False)
-        self.panel.rowconfigure(1, weight=1)
+        self.panel.rowconfigure(2, weight=1)
         self.panel.columnconfigure(0, weight=1)
-        heading = ttk.Frame(self.panel, style="Panel.TFrame")
-        heading.grid(row=0, column=0, sticky="ew", pady=(0, 16))
-        ttk.Label(heading, text="CURRENT GAME", style="Eyebrow.TLabel").pack(anchor="w")
-        ttk.Label(heading, text="Move notation", style="Heading.TLabel").pack(
-            anchor="w", pady=(3, 0)
+
+        metadata_panel = ttk.Frame(self.panel, style="Panel.TFrame")
+        metadata_panel.grid(row=0, column=0, sticky="ew", pady=(0, 10))
+        metadata_panel.columnconfigure(0, weight=1)
+        metadata_panel.columnconfigure(1, weight=1)
+        ttk.Label(metadata_panel, text="GAME DETAILS", style="Eyebrow.TLabel").grid(
+            row=0, column=0, columnspan=2, sticky="w", pady=(0, 5)
+        )
+
+        self.calendar_icon = self._create_calendar_icon()
+        self.metadata_variables: dict[str, tk.StringVar] = {}
+        field_names = tuple(PGN_METADATA_DEFAULTS)
+        for index, name in enumerate(field_names):
+            row = index // 2 + 1
+            column = index % 2
+            field = ttk.Frame(metadata_panel, style="Panel.TFrame")
+            field.grid(
+                row=row,
+                column=column,
+                sticky="ew",
+                padx=(0, 8) if column == 0 else (8, 0),
+                pady=2,
+            )
+            field.columnconfigure(1, weight=1)
+            ttk.Label(field, text=name.upper(), style="Metadata.TLabel").grid(
+                row=0, column=0, sticky="w", padx=(0, 6)
+            )
+            variable = tk.StringVar(value=self.model.headers[name])
+            self.metadata_variables[name] = variable
+            if name == "Result":
+                editor: ttk.Entry | ttk.Combobox = ttk.Combobox(
+                    field,
+                    textvariable=variable,
+                    values=("*", "1-0", "0-1", "1/2-1/2"),
+                    state="readonly",
+                    width=12,
+                )
+                editor.bind(
+                    "<<ComboboxSelected>>",
+                    lambda event, field_name=name: self._commit_metadata_field(
+                        field_name
+                    ),
+                )
+            else:
+                editor = ttk.Entry(field, textvariable=variable, width=12)
+                editor.bind(
+                    "<Return>",
+                    lambda event, field_name=name: self._commit_metadata_field(
+                        field_name
+                    ),
+                )
+                if name == "Date":
+                    ttk.Button(
+                        field,
+                        image=self.calendar_icon,
+                        style="Calendar.TButton",
+                        command=self._pick_date,
+                    ).grid(row=0, column=2, sticky="e", padx=(4, 0))
+            editor.bind(
+                "<FocusOut>",
+                lambda event, field_name=name: self._commit_metadata_field(field_name),
+            )
+            editor.grid(row=0, column=1, sticky="ew")
+
+        ttk.Label(self.panel, text="Move notation", style="Section.TLabel").grid(
+            row=1, column=0, sticky="w", pady=(0, 6)
         )
         move_frame = ttk.Frame(self.panel, style="Panel.TFrame")
-        move_frame.grid(row=1, column=0, sticky="nsew")
+        move_frame.grid(row=2, column=0, sticky="nsew")
         move_frame.rowconfigure(0, weight=1)
         move_frame.columnconfigure(0, weight=1)
         self.move_text = tk.Text(
@@ -256,7 +380,7 @@ class PgnEditor(tk.Tk):
         scrollbar.grid(row=0, column=1, sticky="ns")
 
         navigation = ttk.Frame(self.panel, style="Panel.TFrame")
-        navigation.grid(row=2, column=0, sticky="ew", pady=(10, 0))
+        navigation.grid(row=3, column=0, sticky="ew", pady=(8, 0))
         self.start_button = ttk.Button(
             navigation,
             text="⏮",
@@ -317,7 +441,7 @@ class PgnEditor(tk.Tk):
             )
 
         speed_controls = ttk.Frame(self.panel, style="Panel.TFrame")
-        speed_controls.grid(row=3, column=0, sticky="ew", pady=(10, 0))
+        speed_controls.grid(row=4, column=0, sticky="ew", pady=(8, 0))
         self.speed_label = ttk.Label(
             speed_controls,
             text="Playback: 1.00 seconds",
@@ -333,7 +457,7 @@ class PgnEditor(tk.Tk):
         ).pack(fill=tk.X, pady=(5, 0))
 
         controls = ttk.Frame(self.panel, style="Panel.TFrame")
-        controls.grid(row=4, column=0, sticky="ew", pady=(10, 0))
+        controls.grid(row=5, column=0, sticky="ew", pady=(8, 0))
         self.undo_button = ttk.Button(controls, text="Undo", command=self._undo)
         self.undo_button.pack(side=tk.LEFT, expand=True, fill=tk.X, padx=(0, 3))
         self.clear_button = ttk.Button(controls, text="Clear", command=self._clear)
@@ -344,7 +468,7 @@ class PgnEditor(tk.Tk):
         self.status = ttk.Label(
             self.panel, text="Ready", anchor="w", style="Status.TLabel"
         )
-        self.status.grid(row=5, column=0, sticky="ew", pady=(10, 0))
+        self.status.grid(row=6, column=0, sticky="ew", pady=(8, 0))
 
     def _bind_shortcuts(self) -> None:
         """Bind common platform-neutral keyboard shortcuts."""
@@ -352,6 +476,21 @@ class PgnEditor(tk.Tk):
         self.bind_all("<Control-s>", lambda event: self._save())
         self.bind_all("<Control-Shift-S>", lambda event: self._save_as())
         self.bind_all("<Control-z>", lambda event: self._undo())
+
+    def _create_calendar_icon(self) -> tk.PhotoImage:
+        """Create a crisp themed calendar icon without a platform font glyph."""
+        icon = tk.PhotoImage(width=24, height=24)
+        icon.put(ACCENT, to=(2, 4, 22, 22))
+        icon.put(FIELD_BACKGROUND, to=(4, 9, 20, 20))
+        icon.put(TEXT, to=(6, 1, 8, 7))
+        icon.put(TEXT, to=(16, 1, 18, 7))
+        icon.put(MUTED_TEXT, to=(6, 12, 9, 14))
+        icon.put(MUTED_TEXT, to=(11, 12, 14, 14))
+        icon.put(MUTED_TEXT, to=(16, 12, 19, 14))
+        icon.put(MUTED_TEXT, to=(6, 16, 9, 18))
+        icon.put(MUTED_TEXT, to=(11, 16, 14, 18))
+        icon.put(MUTED_TEXT, to=(16, 16, 19, 18))
+        return icon
 
     def _draw_board(self, event: tk.Event[tk.Misc] | None = None) -> None:
         """Draw a square, labelled board fitted to the available canvas."""
@@ -625,6 +764,52 @@ class PgnEditor(tk.Tk):
         marker = " *" if self.dirty else ""
         self.title(f"{name}{marker} — PGN Editor")
 
+    def _commit_metadata_field(self, name: str) -> None:
+        """Store one edited metadata field and update document state."""
+        variable = self.metadata_variables[name]
+        try:
+            changed = self.model.set_header(name, variable.get())
+        except ValueError as error:
+            variable.set(self.model.headers[name])
+            show_dialog(
+                self,
+                "Invalid game detail",
+                str(error),
+                (("Close", "close"),),
+            )
+            return
+        stored_value = self.model.headers[name]
+        if variable.get() != stored_value:
+            variable.set(stored_value)
+        if changed:
+            self.dirty = True
+            self.status.configure(text=f"Updated {name}")
+            self._refresh()
+
+    def _commit_all_metadata(self) -> None:
+        """Store any metadata field still being edited."""
+        for name in PGN_METADATA_DEFAULTS:
+            self._commit_metadata_field(name)
+
+    def _load_metadata_fields(self) -> None:
+        """Populate metadata editors from the current game model."""
+        headers = self.model.headers
+        for name, variable in self.metadata_variables.items():
+            variable.set(headers[name])
+
+    def _pick_date(self) -> None:
+        """Open a calendar and store a selected date in PGN format."""
+        current_text = self.metadata_variables["Date"].get()
+        try:
+            initial_date = date.fromisoformat(current_text.replace(".", "-"))
+        except ValueError:
+            initial_date = datetime.now(UTC).astimezone().date()
+        dialog = CalendarDialog(self, initial_date)
+        self.wait_window(dialog)
+        if dialog.result is not None:
+            self.metadata_variables["Date"].set(dialog.result.strftime("%Y.%m.%d"))
+            self._commit_metadata_field("Date")
+
     def _render_moves(self) -> None:
         """Render all SAN moves and highlight the displayed position's move."""
         san = self.model.san_moves()
@@ -773,6 +958,7 @@ class PgnEditor(tk.Tk):
     def _open(self) -> None:
         """Prompt for and transactionally load a PGN file."""
         self._stop_playback()
+        self._commit_all_metadata()
         if not self._may_discard_changes():
             return
         filename = filedialog.askopenfilename(
@@ -794,6 +980,7 @@ class PgnEditor(tk.Tk):
             )
             return
         self.model = loaded.model
+        self._load_metadata_fields()
         self.current_path = path
         self.dirty = False
         self.status.configure(text=f"Opened {path.name}")
@@ -808,12 +995,14 @@ class PgnEditor(tk.Tk):
 
     def _save(self) -> bool:
         """Save to the current path, prompting for one if necessary."""
+        self._commit_all_metadata()
         if self.current_path is None:
             return self._save_as()
         return self._write(self.current_path)
 
     def _save_as(self) -> bool:
         """Prompt for a destination and save the current game."""
+        self._commit_all_metadata()
         filename = filedialog.asksaveasfilename(
             parent=self,
             title="Save PGN",
@@ -864,8 +1053,117 @@ class PgnEditor(tk.Tk):
     def _on_close(self) -> None:
         """Close the application after resolving unsaved changes."""
         self._stop_playback()
+        self._commit_all_metadata()
         if self._may_discard_changes():
             self.destroy()
+
+
+class CalendarDialog(tk.Toplevel):
+    """Application-themed calendar used to choose a PGN date."""
+
+    def __init__(self, parent: PgnEditor, initial_date: date) -> None:
+        """Create a modal calendar initially showing a specified date."""
+        super().__init__(parent)
+        self.result: date | None = None
+        self.year = initial_date.year
+        self.month = initial_date.month
+        self.initial_date = initial_date
+        self.withdraw()
+        self.title("Choose date")
+        self.configure(background=APP_BACKGROUND)
+        self.resizable(False, False)
+        self.card = ttk.Frame(self, style="Panel.TFrame", padding=20)
+        self.card.pack(fill=tk.BOTH, expand=True, padx=1, pady=1)
+
+        header = ttk.Frame(self.card, style="Panel.TFrame")
+        header.pack(fill=tk.X, pady=(0, 12))
+        ttk.Button(
+            header,
+            text="◀",
+            width=2,
+            style="Calendar.TButton",
+            command=lambda: self._change_month(-1),
+        ).pack(side=tk.LEFT)
+        self.month_label = ttk.Label(
+            header, text="", style="Section.TLabel", anchor="center"
+        )
+        self.month_label.pack(side=tk.LEFT, expand=True, fill=tk.X, padx=10)
+        ttk.Button(
+            header,
+            text="▶",
+            width=2,
+            style="Calendar.TButton",
+            command=lambda: self._change_month(1),
+        ).pack(side=tk.RIGHT)
+
+        self.days_frame = ttk.Frame(self.card, style="Panel.TFrame")
+        self.days_frame.pack(fill=tk.BOTH, expand=True)
+        for column, weekday in enumerate(
+            ("MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN")
+        ):
+            self.days_frame.columnconfigure(column, weight=1)
+            ttk.Label(
+                self.days_frame,
+                text=weekday,
+                style="Metadata.TLabel",
+                anchor="center",
+            ).grid(row=0, column=column, sticky="ew", padx=2, pady=(0, 5))
+
+        ttk.Button(
+            self.card,
+            text="Today",
+            command=lambda: self._choose(datetime.now(UTC).astimezone().date()),
+        ).pack(fill=tk.X, pady=(12, 0))
+        self._render_month()
+        self.protocol("WM_DELETE_WINDOW", self.destroy)
+        self.bind("<Escape>", lambda event: self.destroy())
+        self.transient(parent)
+        self.update_idletasks()
+        x = parent.winfo_rootx() + (parent.winfo_width() - self.winfo_reqwidth()) // 2
+        y = parent.winfo_rooty() + (parent.winfo_height() - self.winfo_reqheight()) // 2
+        self.geometry(f"+{max(0, x)}+{max(0, y)}")
+        self.deiconify()
+        self.grab_set()
+
+    def _render_month(self) -> None:
+        """Render the currently selected month into the day grid."""
+        self.month_label.configure(
+            text=date(self.year, self.month, 1).strftime("%B %Y")
+        )
+        for child in self.days_frame.grid_slaves():
+            if int(child.grid_info()["row"]) > 0:
+                child.destroy()
+        for row, week in enumerate(
+            Calendar(firstweekday=0).monthdayscalendar(self.year, self.month), start=1
+        ):
+            for column, day_number in enumerate(week):
+                if day_number == 0:
+                    continue
+                selected_date = date(self.year, self.month, day_number)
+                style = (
+                    "Accent.TButton"
+                    if selected_date == self.initial_date
+                    else "Calendar.TButton"
+                )
+                ttk.Button(
+                    self.days_frame,
+                    text=str(day_number),
+                    width=3,
+                    style=style,
+                    command=lambda value=selected_date: self._choose(value),
+                ).grid(row=row, column=column, sticky="nsew", padx=2, pady=2)
+
+    def _change_month(self, offset: int) -> None:
+        """Move the calendar backwards or forwards by one month."""
+        month_index = self.year * 12 + self.month - 1 + offset
+        self.year, zero_based_month = divmod(month_index, 12)
+        self.month = zero_based_month + 1
+        self._render_month()
+
+    def _choose(self, selected_date: date) -> None:
+        """Store the chosen date and close the calendar."""
+        self.result = selected_date
+        self.destroy()
 
 
 class StyledDialog(tk.Toplevel):

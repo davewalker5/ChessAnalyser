@@ -21,6 +21,26 @@ def test_save_and_load_preserves_moves_and_headers(tmp_path: Path) -> None:
     assert not loaded.additional_games
 
 
+def test_save_and_load_preserves_edited_metadata(tmp_path: Path) -> None:
+    """All editable metadata should survive a file round trip."""
+    model = GameModel()
+    expected = {
+        "Event": "County Championship",
+        "Site": "London",
+        "Date": "2026.08.24",
+        "Round": "4",
+        "White": "Alice",
+        "Black": "Bob",
+        "Result": "1-0",
+    }
+    for name, value in expected.items():
+        model.set_header(name, value)
+    path = tmp_path / "metadata.pgn"
+    save_pgn(path, model)
+
+    assert dict(load_pgn(path).model.headers).items() >= expected.items()
+
+
 def test_multiple_games_are_reported(tmp_path: Path) -> None:
     """Loading should identify PGN text containing another game."""
     path = tmp_path / "games.pgn"

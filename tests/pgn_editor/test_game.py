@@ -163,3 +163,35 @@ def test_checkmate_prevents_further_moves_without_changing_state() -> None:
         play(model, "e2", "e4")
     assert model.moves == before_moves
     assert model.board == before_board
+
+
+def test_metadata_defaults_and_edits_are_exported() -> None:
+    """Editable metadata should use defaults and appear in exported PGN."""
+    model = GameModel()
+    assert (
+        dict(model.headers).items()
+        >= {
+            "Event": "Unknown",
+            "Site": "?",
+            "Date": "????.??.??",
+            "Round": "?",
+            "White": "?",
+            "Black": "?",
+            "Result": "*",
+        }.items()
+    )
+
+    assert model.set_header("Event", "Club Championship")
+    assert model.set_header("White", "Alice")
+    assert model.set_header("Site", "   ") is False
+    assert '[Event "Club Championship"]' in model.to_pgn()
+    assert '[White "Alice"]' in model.to_pgn()
+
+
+def test_metadata_rejects_unsupported_fields_and_results() -> None:
+    """Metadata editing should retain standards-compliant Result values."""
+    model = GameModel()
+    with pytest.raises(ValueError, match="Unsupported"):
+        model.set_header("Opening", "Sicilian")
+    with pytest.raises(ValueError, match="Result"):
+        model.set_header("Result", "White wins")
