@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "chess-performance-modelling"
-version = "0.1.0"
+version = "1.20.0"
 description = "Standalone Jupyter reporting suite for chess performance modelling."
 requires-python = ">=3.11"
 dependencies = [
