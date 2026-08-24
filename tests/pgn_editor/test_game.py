@@ -131,3 +131,35 @@ def test_editing_from_history_requires_and_replaces_continuation() -> None:
     assert model.san_moves() == ["e4", "c5"]
     assert model.displayed_ply == 2
     assert not model.has_future_moves
+
+
+def test_legal_destinations_follow_the_current_position() -> None:
+    """Destination hints should include only legal moves for the side to move."""
+    model = GameModel()
+    assert model.legal_destinations(chess.G1) == frozenset({chess.F3, chess.H3})
+    assert model.legal_destinations(chess.G8) == frozenset()
+
+    play(model, "e2", "e4")
+    assert model.legal_destinations(chess.E7) == frozenset({chess.E6, chess.E5})
+    assert model.legal_destinations(chess.E4) == frozenset()
+
+
+def test_checkmate_prevents_further_moves_without_changing_state() -> None:
+    """A terminal position should reject moves and retain all game state."""
+    model = GameModel()
+    for source, destination in (
+        ("f2", "f3"),
+        ("e7", "e5"),
+        ("g2", "g4"),
+        ("d8", "h4"),
+    ):
+        play(model, source, destination)
+    before_moves = model.moves
+    before_board = model.board
+
+    assert model.game_over_message == "Checkmate. Black wins."
+    assert model.legal_destinations(chess.E2) == frozenset()
+    with pytest.raises(MoveRejectedError, match="Checkmate"):
+        play(model, "e2", "e4")
+    assert model.moves == before_moves
+    assert model.board == before_board

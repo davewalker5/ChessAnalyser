@@ -21,6 +21,8 @@ LIGHT_SQUARE = "#c5dcda"
 DARK_SQUARE = "#426d73"
 SELECTED_SQUARE = "#d8b84c"
 TARGET_SQUARE = "#8fba69"
+ILLEGAL_TARGET_SQUARE = "#a84b5d"
+LEGAL_MOVE_MARKER = "#35d4d0"
 BLACK_PIECE = "#151515"
 WHITE_PIECE = "#f7f7f7"
 WHITE_PIECE_OUTLINE = "#303030"
@@ -51,6 +53,7 @@ class PgnEditor(tk.Tk):
         self.white_at_bottom = True
         self.drag_source: chess.Square | None = None
         self.drag_target: chess.Square | None = None
+        self.legal_drag_targets: frozenset[chess.Square] = frozenset()
         self.playback_after_id: str | None = None
         self.playback_seconds = tk.DoubleVar(value=DEFAULT_PLAYBACK_SECONDS)
         self.board_pixels = MINIMUM_BOARD_SIZE
@@ -378,7 +381,11 @@ class PgnEditor(tk.Tk):
                 if square == self.drag_source:
                     colour = SELECTED_SQUARE
                 elif square == self.drag_target:
-                    colour = TARGET_SQUARE
+                    colour = (
+                        TARGET_SQUARE
+                        if square in self.legal_drag_targets
+                        else ILLEGAL_TARGET_SQUARE
+                    )
                 self.canvas.create_rectangle(
                     x0,
                     y0,
@@ -388,6 +395,22 @@ class PgnEditor(tk.Tk):
                     outline=colour,
                 )
                 piece = self.model.board.piece_at(square)
+                if (
+                    square in self.legal_drag_targets
+                    and square != self.drag_target
+                    and piece is None
+                ):
+                    marker_radius = square_size * 0.09
+                    centre_x = x0 + square_size / 2
+                    centre_y = y0 + square_size / 2
+                    self.canvas.create_oval(
+                        centre_x - marker_radius,
+                        centre_y - marker_radius,
+                        centre_x + marker_radius,
+                        centre_y + marker_radius,
+                        fill=LEGAL_MOVE_MARKER,
+                        outline="",
+                    )
                 if piece is not None:
                     glyph = PIECE_GLYPHS[piece.piece_type]
                     centre_x = x0 + square_size / 2
@@ -410,6 +433,16 @@ class PgnEditor(tk.Tk):
                         fill=WHITE_PIECE if piece.color == chess.WHITE else BLACK_PIECE,
                         font=piece_font,
                     )
+                    if square in self.legal_drag_targets and square != self.drag_target:
+                        capture_inset = square_size * 0.08
+                        self.canvas.create_oval(
+                            x0 + capture_inset,
+                            y0 + capture_inset,
+                            x0 + square_size - capture_inset,
+                            y0 + square_size - capture_inset,
+                            outline=LEGAL_MOVE_MARKER,
+                            width=max(2, int(square_size * 0.04)),
+                        )
         coordinate_font = ("TkDefaultFont", max(8, int(square_size * 0.16)), "bold")
         for index in range(8):
             centre_x = self.board_x + (index + 0.5) * square_size
@@ -463,8 +496,16 @@ class PgnEditor(tk.Tk):
         square = self._square_at(event.x, event.y)
         if square is not None and self.model.board.piece_at(square) is not None:
             self._stop_playback()
+            legal_targets = self.model.legal_destinations(square)
+            if not legal_targets:
+                message = self.model.game_over_message
+                self.status.configure(text=message or "That piece has no legal moves.")
+                self.bell()
+                return
             self.drag_source = square
             self.drag_target = None
+            self.legal_drag_targets = legal_targets
+            self.status.configure(text="Choose a highlighted destination")
             self._draw_board()
 
     def _drag_motion(self, event: tk.Event[tk.Misc]) -> None:
@@ -482,10 +523,17 @@ class PgnEditor(tk.Tk):
         """Attempt to complete a dragged move."""
         source = self.drag_source
         destination = self._square_at(event.x, event.y)
+        legal_targets = self.legal_drag_targets
         self.drag_source = None
         self.drag_target = None
+        self.legal_drag_targets = frozenset()
         if source is None or destination is None or source == destination:
             self._draw_board()
+            return
+        if destination not in legal_targets:
+            self.status.configure(text="Illegal move")
+            self.bell()
+            self._refresh()
             return
         promotion = self._promotion_for(source, destination)
         if promotion is False:
@@ -518,7 +566,7 @@ class PgnEditor(tk.Tk):
             self.bell()
         else:
             self.dirty = True
-            self.status.configure(text=f"Added {san}")
+            self.status.configure(text=self.model.game_over_message or f"Added {san}")
         self._refresh()
 
     def _promotion_for(

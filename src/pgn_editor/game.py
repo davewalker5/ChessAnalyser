@@ -89,6 +89,33 @@ class GameModel:
         """Return a copy of the game's PGN headers."""
         return chess.pgn.Headers(self._game.headers)
 
+    def legal_destinations(self, source: chess.Square) -> frozenset[chess.Square]:
+        """
+        Return legal destination squares for the piece on a source square.
+
+        Promotion choices that share a destination are represented once.
+
+        :param source: Source square index.
+        :return: Legal destination square indices.
+        """
+        if not chess.SQUARES[0] <= source <= chess.SQUARES[-1]:
+            raise ValueError("source must be a valid chess square")
+        return frozenset(
+            move.to_square
+            for move in self._board.legal_moves
+            if move.from_square == source
+        )
+
+    @property
+    def game_over_message(self) -> str | None:
+        """Return a concise terminal-position message, if the game is over."""
+        if self._board.is_checkmate():
+            winner = "Black" if self._board.turn == chess.WHITE else "White"
+            return f"Checkmate. {winner} wins."
+        if self._board.is_stalemate():
+            return "Draw by stalemate."
+        return None
+
     def add_move(
         self,
         source: chess.Square,
@@ -107,6 +134,9 @@ class GameModel:
         :raises MoveRejectedError: If the move cannot safely enter the model.
         :raises FutureMovesError: If confirmation is needed to replace later moves.
         """
+        game_over_message = self.game_over_message
+        if game_over_message is not None:
+            raise MoveRejectedError(game_over_message)
         move = chess.Move(source, destination, promotion=promotion)
         if move not in self._board.legal_moves:
             raise MoveRejectedError("That move cannot be added to the game.")
