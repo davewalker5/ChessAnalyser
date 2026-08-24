@@ -6,7 +6,7 @@ from tkinter import filedialog, ttk
 
 import chess
 
-from pgn_editor.game import GameModel, MoveRejectedError
+from pgn_editor.game import FutureMovesError, GameModel, MoveRejectedError
 from pgn_editor.persistence import PgnFileError, load_pgn, save_pgn
 
 APP_BACKGROUND = "#07111f"
@@ -26,6 +26,9 @@ WHITE_PIECE = "#f7f7f7"
 WHITE_PIECE_OUTLINE = "#303030"
 BOARD_MARGIN = 28
 MINIMUM_BOARD_SIZE = 320
+DEFAULT_PLAYBACK_SECONDS = 1.0
+MINIMUM_PLAYBACK_SECONDS = 0.25
+MAXIMUM_PLAYBACK_SECONDS = 5.0
 PIECE_GLYPHS = {
     chess.PAWN: "♟",
     chess.KNIGHT: "♞",
@@ -48,6 +51,8 @@ class PgnEditor(tk.Tk):
         self.white_at_bottom = True
         self.drag_source: chess.Square | None = None
         self.drag_target: chess.Square | None = None
+        self.playback_after_id: str | None = None
+        self.playback_seconds = tk.DoubleVar(value=DEFAULT_PLAYBACK_SECONDS)
         self.board_pixels = MINIMUM_BOARD_SIZE
         self.title("PGN Editor")
         self.minsize(760, 500)
@@ -117,6 +122,22 @@ class PgnEditor(tk.Tk):
             bordercolor=[("active", ACCENT), ("focus", ACCENT)],
         )
         style.configure(
+            "Transport.TButton",
+            background=SURFACE_RAISED,
+            foreground=ACCENT,
+            bordercolor="#397b82",
+            lightcolor=SURFACE_RAISED,
+            darkcolor=SURFACE_RAISED,
+            padding=(3, 7),
+            font=("TkDefaultFont", 14, "bold"),
+        )
+        style.map(
+            "Transport.TButton",
+            background=[("active", "#18384a"), ("pressed", "#1d4654")],
+            foreground=[("active", TEXT), ("disabled", "#536a80")],
+            bordercolor=[("active", ACCENT), ("focus", ACCENT)],
+        )
+        style.configure(
             "Accent.TButton",
             background=ACCENT,
             foreground=APP_BACKGROUND,
@@ -135,6 +156,14 @@ class PgnEditor(tk.Tk):
             troughcolor=FIELD_BACKGROUND,
             bordercolor=BORDER,
             arrowcolor=MUTED_TEXT,
+        )
+        style.configure(
+            "Horizontal.TScale",
+            background=SURFACE,
+            troughcolor=FIELD_BACKGROUND,
+            bordercolor=BORDER,
+            lightcolor=ACCENT,
+            darkcolor=ACCENT,
         )
 
     def _create_menu(self) -> None:
@@ -223,17 +252,96 @@ class PgnEditor(tk.Tk):
         self.move_text.grid(row=0, column=0, sticky="nsew")
         scrollbar.grid(row=0, column=1, sticky="ns")
 
+        navigation = ttk.Frame(self.panel, style="Panel.TFrame")
+        navigation.grid(row=2, column=0, sticky="ew", pady=(10, 0))
+        self.start_button = ttk.Button(
+            navigation,
+            text="⏮",
+            width=2,
+            style="Transport.TButton",
+            command=self._navigate_start,
+        )
+        self.back_button = ttk.Button(
+            navigation,
+            text="◀◀",
+            width=2,
+            style="Transport.TButton",
+            command=self._navigate_back,
+        )
+        self.forward_button = ttk.Button(
+            navigation,
+            text="▶▶",
+            width=2,
+            style="Transport.TButton",
+            command=self._navigate_forward,
+        )
+        self.end_button = ttk.Button(
+            navigation,
+            text="⏭",
+            width=2,
+            style="Transport.TButton",
+            command=self._navigate_end,
+        )
+        self.play_button = ttk.Button(
+            navigation,
+            text="▶",
+            width=2,
+            style="Transport.TButton",
+            command=self._play,
+        )
+        self.pause_button = ttk.Button(
+            navigation,
+            text="⏸",
+            width=2,
+            style="Transport.TButton",
+            command=self._pause,
+        )
+        for index, button in enumerate(
+            (
+                self.start_button,
+                self.back_button,
+                self.forward_button,
+                self.end_button,
+                self.play_button,
+                self.pause_button,
+            )
+        ):
+            button.pack(
+                side=tk.LEFT,
+                expand=True,
+                fill=tk.X,
+                padx=(0 if index == 0 else 3, 0),
+            )
+
+        speed_controls = ttk.Frame(self.panel, style="Panel.TFrame")
+        speed_controls.grid(row=3, column=0, sticky="ew", pady=(10, 0))
+        self.speed_label = ttk.Label(
+            speed_controls,
+            text="Playback: 1.00 seconds",
+            style="Eyebrow.TLabel",
+        )
+        self.speed_label.pack(anchor="w")
+        ttk.Scale(
+            speed_controls,
+            from_=MINIMUM_PLAYBACK_SECONDS,
+            to=MAXIMUM_PLAYBACK_SECONDS,
+            variable=self.playback_seconds,
+            command=self._playback_speed_changed,
+        ).pack(fill=tk.X, pady=(5, 0))
+
         controls = ttk.Frame(self.panel, style="Panel.TFrame")
-        controls.grid(row=2, column=0, sticky="ew", pady=(10, 0))
+        controls.grid(row=4, column=0, sticky="ew", pady=(10, 0))
         self.undo_button = ttk.Button(controls, text="Undo", command=self._undo)
-        self.undo_button.pack(side=tk.LEFT, padx=(0, 5))
+        self.undo_button.pack(side=tk.LEFT, expand=True, fill=tk.X, padx=(0, 3))
         self.clear_button = ttk.Button(controls, text="Clear", command=self._clear)
-        self.clear_button.pack(side=tk.LEFT, padx=5)
-        ttk.Button(controls, text="Flip", command=self._flip).pack(side=tk.LEFT, padx=5)
+        self.clear_button.pack(side=tk.LEFT, expand=True, fill=tk.X, padx=3)
+        ttk.Button(controls, text="Flip", command=self._flip).pack(
+            side=tk.LEFT, expand=True, fill=tk.X, padx=(3, 0)
+        )
         self.status = ttk.Label(
             self.panel, text="Ready", anchor="w", style="Status.TLabel"
         )
-        self.status.grid(row=3, column=0, sticky="ew", pady=(10, 0))
+        self.status.grid(row=5, column=0, sticky="ew", pady=(10, 0))
 
     def _bind_shortcuts(self) -> None:
         """Bind common platform-neutral keyboard shortcuts."""
@@ -354,6 +462,7 @@ class PgnEditor(tk.Tk):
         """Begin dragging when the pointer is over a piece."""
         square = self._square_at(event.x, event.y)
         if square is not None and self.model.board.piece_at(square) is not None:
+            self._stop_playback()
             self.drag_source = square
             self.drag_target = None
             self._draw_board()
@@ -384,6 +493,26 @@ class PgnEditor(tk.Tk):
             return
         try:
             san = self.model.add_move(source, destination, promotion)
+        except FutureMovesError:
+            answer = show_dialog(
+                self,
+                "Replace later moves?",
+                "Editing from this position will discard all later moves.",
+                (("Replace", "replace"), ("Cancel", "cancel")),
+                default="cancel",
+            )
+            if answer != "replace":
+                self._refresh()
+                return
+            try:
+                san = self.model.add_move(
+                    source, destination, promotion, replace_future=True
+                )
+            except MoveRejectedError as error:
+                self.status.configure(text=str(error))
+                self.bell()
+                self._refresh()
+                return
         except MoveRejectedError as error:
             self.status.configure(text=str(error))
             self.bell()
@@ -424,16 +553,23 @@ class PgnEditor(tk.Tk):
     def _refresh(self) -> None:
         """Synchronise board, move text, controls, and window title."""
         self._draw_board()
-        san = self.model.san_moves()
-        lines = []
-        for index in range(0, len(san), 2):
-            black = san[index + 1] if index + 1 < len(san) else ""
-            lines.append(f"{index // 2 + 1:>3}.  {san[index]:<12} {black}")
-        self.move_text.configure(state=tk.NORMAL)
-        self.move_text.delete("1.0", tk.END)
-        self.move_text.insert("1.0", "\n".join(lines))
-        self.move_text.configure(state=tk.DISABLED)
-        self.move_text.see(tk.END)
+        self._render_moves()
+        previous_state = tk.NORMAL if self.model.has_previous_position else tk.DISABLED
+        next_state = tk.NORMAL if self.model.has_next_position else tk.DISABLED
+        self.start_button.configure(state=previous_state)
+        self.back_button.configure(state=previous_state)
+        self.forward_button.configure(state=next_state)
+        self.end_button.configure(state=next_state)
+        self.play_button.configure(
+            state=(
+                tk.NORMAL
+                if self.model.has_next_position and self.playback_after_id is None
+                else tk.DISABLED
+            )
+        )
+        self.pause_button.configure(
+            state=tk.NORMAL if self.playback_after_id is not None else tk.DISABLED
+        )
         state = tk.NORMAL if self.model.has_moves else tk.DISABLED
         self.undo_button.configure(state=state)
         self.clear_button.configure(state=state)
@@ -441,8 +577,122 @@ class PgnEditor(tk.Tk):
         marker = " *" if self.dirty else ""
         self.title(f"{name}{marker} — PGN Editor")
 
+    def _render_moves(self) -> None:
+        """Render all SAN moves and highlight the displayed position's move."""
+        san = self.model.san_moves()
+        self.move_text.configure(state=tk.NORMAL)
+        self.move_text.delete("1.0", tk.END)
+        for index in range(0, len(san), 2):
+            self.move_text.insert(tk.END, f"{index // 2 + 1:>3}.  ")
+            white_tag = f"move_{index + 1}"
+            self.move_text.insert(tk.END, f"{san[index]:<12}", white_tag)
+            self.move_text.tag_configure(
+                white_tag, background=FIELD_BACKGROUND, foreground=TEXT
+            )
+            if index + 1 < len(san):
+                black_tag = f"move_{index + 2}"
+                self.move_text.insert(tk.END, san[index + 1], black_tag)
+                self.move_text.tag_configure(
+                    black_tag, background=FIELD_BACKGROUND, foreground=TEXT
+                )
+            if index + 2 < len(san):
+                self.move_text.insert(tk.END, "\n")
+        highlighted_tag = f"move_{self.model.displayed_ply}"
+        if self.model.displayed_ply > 0:
+            self.move_text.tag_configure(
+                highlighted_tag,
+                background=ACCENT,
+                foreground=APP_BACKGROUND,
+            )
+            ranges = self.move_text.tag_ranges(highlighted_tag)
+            if ranges:
+                self.move_text.see(ranges[0])
+        else:
+            self.move_text.see("1.0")
+        self.move_text.configure(state=tk.DISABLED)
+
+    def _navigate_start(self) -> None:
+        """Pause playback and display the starting position."""
+        self._stop_playback()
+        if self.model.navigate_start():
+            self.status.configure(text="At the starting position")
+        self._refresh()
+
+    def _navigate_back(self) -> None:
+        """Pause playback and display the previous position."""
+        self._stop_playback()
+        if self.model.navigate_back():
+            self.status.configure(text=f"Position {self.model.displayed_ply}")
+        self._refresh()
+
+    def _navigate_forward(self) -> None:
+        """Pause playback and display the next position."""
+        self._stop_playback()
+        if self.model.navigate_forward():
+            self.status.configure(text=f"Position {self.model.displayed_ply}")
+        self._refresh()
+
+    def _navigate_end(self) -> None:
+        """Pause playback and display the final position."""
+        self._stop_playback()
+        if self.model.navigate_end():
+            self.status.configure(text="At the final position")
+        self._refresh()
+
+    def _play(self) -> None:
+        """Start automatic playback from the displayed position."""
+        if self.playback_after_id is not None or not self.model.has_next_position:
+            return
+        self.status.configure(text="Playing game")
+        self._schedule_playback_step()
+        self._refresh()
+
+    def _pause(self) -> None:
+        """Pause automatic playback immediately."""
+        if self._stop_playback():
+            self.status.configure(text="Playback paused")
+        self._refresh()
+
+    def _schedule_playback_step(self) -> None:
+        """Schedule the sole active playback timer using the selected delay."""
+        delay_milliseconds = max(1, round(self.playback_seconds.get() * 1000))
+        self.playback_after_id = self.after(delay_milliseconds, self._playback_step)
+
+    def _playback_step(self) -> None:
+        """Advance one move and schedule the following playback step."""
+        self.playback_after_id = None
+        self.model.navigate_forward()
+        if self.model.has_next_position:
+            self._schedule_playback_step()
+        else:
+            self.status.configure(text="Playback complete")
+        self._refresh()
+
+    def _stop_playback(self) -> bool:
+        """Cancel the active playback timer, returning whether one existed."""
+        if self.playback_after_id is None:
+            return False
+        self.after_cancel(self.playback_after_id)
+        self.playback_after_id = None
+        if hasattr(self, "pause_button"):
+            self.pause_button.configure(state=tk.DISABLED)
+            self.play_button.configure(
+                state=tk.NORMAL if self.model.has_next_position else tk.DISABLED
+            )
+        return True
+
+    def _playback_speed_changed(self, value: str) -> None:
+        """Update the user-facing playback delay label."""
+        seconds = float(value)
+        self.speed_label.configure(text=f"Playback: {seconds:.2f} seconds")
+        if self.playback_after_id is not None:
+            self.after_cancel(self.playback_after_id)
+            self.playback_after_id = None
+            self._schedule_playback_step()
+
     def _undo(self) -> None:
         """Undo the final recorded move."""
+        self._stop_playback()
         if self.model.undo():
             self.dirty = True
             self.status.configure(text="Last move removed")
@@ -450,6 +700,7 @@ class PgnEditor(tk.Tk):
 
     def _clear(self) -> None:
         """Confirm and clear the current game's moves."""
+        self._stop_playback()
         if not self.model.has_moves:
             return
         answer = show_dialog(
@@ -473,6 +724,7 @@ class PgnEditor(tk.Tk):
 
     def _open(self) -> None:
         """Prompt for and transactionally load a PGN file."""
+        self._stop_playback()
         if not self._may_discard_changes():
             return
         filename = filedialog.askopenfilename(
@@ -563,6 +815,7 @@ class PgnEditor(tk.Tk):
 
     def _on_close(self) -> None:
         """Close the application after resolving unsaved changes."""
+        self._stop_playback()
         if self._may_discard_changes():
             self.destroy()
 

@@ -3,7 +3,7 @@
 import chess
 import pytest
 
-from pgn_editor.game import GameModel, MoveRejectedError
+from pgn_editor.game import FutureMovesError, GameModel, MoveRejectedError
 
 
 def play(model: GameModel, source: str, destination: str) -> str:
@@ -78,3 +78,56 @@ def test_en_passant_and_promotion() -> None:
     assert promotion_game.board.piece_at(chess.A8) == chess.Piece(
         chess.QUEEN, chess.WHITE
     )
+
+
+def test_navigation_changes_position_without_mutating_game() -> None:
+    """Navigating should change only the displayed board and cursor."""
+    model = GameModel()
+    for source, destination in (("e2", "e4"), ("e7", "e5"), ("g1", "f3")):
+        play(model, source, destination)
+    original_moves = model.moves
+    original_pgn = model.to_pgn()
+
+    assert model.navigate_start()
+    assert model.displayed_ply == 0
+    assert model.board == chess.Board()
+    assert model.moves == original_moves
+    assert model.to_pgn() == original_pgn
+
+    assert model.navigate_forward()
+    assert model.displayed_ply == 1
+    assert model.board.piece_at(chess.E4) == chess.Piece(chess.PAWN, chess.WHITE)
+    assert model.navigate_end()
+    assert model.displayed_ply == 3
+    assert model.moves == original_moves
+
+
+def test_navigation_boundaries_are_safe() -> None:
+    """Navigation should report boundaries and reject out-of-range cursors."""
+    model = GameModel()
+    assert not model.navigate_start()
+    assert not model.navigate_back()
+    assert not model.navigate_forward()
+    assert not model.navigate_end()
+    with pytest.raises(ValueError):
+        model.navigate_to(1)
+
+
+def test_editing_from_history_requires_and_replaces_continuation() -> None:
+    """A historical edit should replace future moves only when authorised."""
+    model = GameModel()
+    for source, destination in (("e2", "e4"), ("e7", "e5"), ("g1", "f3")):
+        play(model, source, destination)
+    model.navigate_to(1)
+    original_moves = model.moves
+
+    with pytest.raises(FutureMovesError):
+        play(model, "c7", "c5")
+    assert model.moves == original_moves
+    assert model.displayed_ply == 1
+
+    san = model.add_move(chess.C7, chess.C5, replace_future=True)
+    assert san == "c5"
+    assert model.san_moves() == ["e4", "c5"]
+    assert model.displayed_ply == 2
+    assert not model.has_future_moves
