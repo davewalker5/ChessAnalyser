@@ -10,6 +10,9 @@ if command -v port >/dev/null 2>&1 && port -q installed clang-17 >/dev/null 2>&1
     export PKG_CONFIG_PATH=/opt/local/lib/pkgconfig
 fi
 
+export PROJECT_ROOT="$( cd -- "$(dirname "$0")/.." >/dev/null 2>&1 ; pwd -P )"
+cd "$PROJECT_ROOT"
+
 # Deactivate and remove the old virtual environment, if present
 echo "Removing existing Virtual Environment, if present ..."
 deactivate 2> /dev/null || true

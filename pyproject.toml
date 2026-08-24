@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "chess-analyser"
-version = "1.20.0"
+version = "1.21.0"
 description = "Command-line analysis of chess games using UCI engines."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -27,6 +27,7 @@ dependencies = [
 
 [project.scripts]
 chess-analyser = "chess_analyser.cli:handle_command_line"
+pgn-editor = "pgn_editor.app:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

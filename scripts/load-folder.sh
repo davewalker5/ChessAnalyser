@@ -14,7 +14,7 @@ declare -a engines=(
 )
 
 # Set the environment so Python can find the analyser module
-PROJECT_ROOT="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
+PROJECT_ROOT="$( cd -- "$(dirname "$0")/.." >/dev/null 2>&1 ; pwd -P )"
 export PYTHONPATH="$PROJECT_ROOT/src"
 
 # Activate the virtual environment and run the command
