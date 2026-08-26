@@ -1,6 +1,7 @@
 """Chess game state for the PGN editor."""
 
 from collections.abc import Iterable
+from dataclasses import dataclass
 
 import chess
 import chess.pgn
@@ -15,6 +16,21 @@ PGN_METADATA_DEFAULTS = {
     "Result": "*",
 }
 VALID_RESULTS = frozenset({"1-0", "0-1", "1/2-1/2", "*"})
+PIECE_VALUES = {
+    chess.PAWN: 1,
+    chess.KNIGHT: 3,
+    chess.BISHOP: 3,
+    chess.ROOK: 5,
+    chess.QUEEN: 9,
+}
+
+
+@dataclass(frozen=True)
+class CapturedMaterial:
+    """Describe the pieces and points captured by one player."""
+
+    pieces: tuple[chess.Piece, ...]
+    points: int
 
 
 class MoveRejectedError(ValueError):
@@ -60,6 +76,11 @@ class GameModel:
     def has_moves(self) -> bool:
         """Return whether the game contains at least one move."""
         return bool(self._moves)
+
+    @property
+    def has_resettable_content(self) -> bool:
+        """Return whether Clear Game would change moves or metadata."""
+        return self.has_moves or dict(self._game.headers) != PGN_METADATA_DEFAULTS
 
     @property
     def moves(self) -> tuple[chess.Move, ...]:
@@ -137,6 +158,10 @@ class GameModel:
             return f"Checkmate. {winner} wins."
         if self._board.is_stalemate():
             return "Draw by stalemate."
+        outcome = self._board.outcome(claim_draw=False)
+        if outcome is not None:
+            reason = outcome.termination.name.replace("_", " ").lower()
+            return f"Draw by {reason}."
         return None
 
     def add_move(
@@ -171,6 +196,9 @@ class GameModel:
         self._moves.append(move)
         self._displayed_ply += 1
         self._board.push(move)
+        outcome = self._board.outcome(claim_draw=False)
+        if outcome is not None:
+            self._game.headers["Result"] = outcome.result()
         self._sync_game()
         return san
 
@@ -178,21 +206,57 @@ class GameModel:
         """Remove the final move, returning whether a move was removed."""
         if not self._moves:
             return False
+        final_board = self._game.end().board()
+        terminal_move_removed = final_board.outcome(claim_draw=False) is not None
         self._moves.pop()
         self._displayed_ply = len(self._moves)
         self._rebuild_board()
+        if terminal_move_removed:
+            self._game.headers["Result"] = "*"
         self._sync_game()
         return True
 
     def clear(self) -> bool:
-        """Remove all moves while retaining headers."""
-        if not self._moves:
+        """Remove all moves and restore editable metadata defaults."""
+        if not self.has_resettable_content:
             return False
+        self._game = self._new_game()
         self._moves.clear()
         self._displayed_ply = 0
         self._rebuild_board()
-        self._sync_game()
         return True
+
+    def captured_material(self, capturing_color: chess.Color) -> CapturedMaterial:
+        """
+        Return material captured by one player up to the displayed position.
+
+        :param capturing_color: Colour of the player whose captures are requested.
+        :return: Captured pieces and their conventional material-point total.
+        """
+        board = self._game.board()
+        captured_pieces: list[chess.Piece] = []
+        for move in self._moves[: self._displayed_ply]:
+            moving_color = board.turn
+            captured_piece: chess.Piece | None = None
+            if board.is_en_passant(move):
+                capture_square = move.to_square + (-8 if moving_color else 8)
+                captured_piece = board.piece_at(capture_square)
+            elif board.is_capture(move):
+                captured_piece = board.piece_at(move.to_square)
+            if moving_color == capturing_color and captured_piece is not None:
+                captured_pieces.append(captured_piece)
+            board.push(move)
+        ordered_pieces = tuple(
+            sorted(
+                captured_pieces,
+                key=lambda piece: (PIECE_VALUES[piece.piece_type], piece.piece_type),
+                reverse=True,
+            )
+        )
+        return CapturedMaterial(
+            pieces=ordered_pieces,
+            points=sum(PIECE_VALUES[piece.piece_type] for piece in ordered_pieces),
+        )
 
     def san_moves(self) -> list[str]:
         """Return SAN text for all moves in order."""

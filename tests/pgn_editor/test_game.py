@@ -1,9 +1,15 @@
 """Tests for PGN editor game state."""
 
 import chess
+import chess.pgn
 import pytest
 
-from pgn_editor.game import FutureMovesError, GameModel, MoveRejectedError
+from pgn_editor.game import (
+    PGN_METADATA_DEFAULTS,
+    FutureMovesError,
+    GameModel,
+    MoveRejectedError,
+)
 
 
 def play(model: GameModel, source: str, destination: str) -> str:
@@ -158,11 +164,42 @@ def test_checkmate_prevents_further_moves_without_changing_state() -> None:
     before_board = model.board
 
     assert model.game_over_message == "Checkmate. Black wins."
+    assert model.headers["Result"] == "0-1"
     assert model.legal_destinations(chess.E2) == frozenset()
     with pytest.raises(MoveRejectedError, match="Checkmate"):
         play(model, "e2", "e4")
     assert model.moves == before_moves
     assert model.board == before_board
+
+
+def test_undoing_checkmate_restores_unknown_result() -> None:
+    """Undoing the terminal move should reset its automatically assigned result."""
+    model = GameModel()
+    for source, destination in (
+        ("f2", "f3"),
+        ("e7", "e5"),
+        ("g2", "g4"),
+        ("d8", "h4"),
+    ):
+        play(model, source, destination)
+
+    assert model.headers["Result"] == "0-1"
+    model.navigate_start()
+    assert model.undo()
+    assert model.headers["Result"] == "*"
+
+
+def test_stalemate_sets_draw_result_and_undo_resets_it() -> None:
+    """A move causing stalemate should assign and subsequently clear a draw."""
+    board = chess.Board("k7/2Q5/2K5/8/8/8/8/8 w - - 0 1")
+    model = GameModel(chess.pgn.Game.from_board(board))
+
+    play(model, "c7", "b6")
+    assert model.board.is_stalemate()
+    assert model.headers["Result"] == "1/2-1/2"
+
+    assert model.undo()
+    assert model.headers["Result"] == "*"
 
 
 def test_metadata_defaults_and_edits_are_exported() -> None:
@@ -195,3 +232,87 @@ def test_metadata_rejects_unsupported_fields_and_results() -> None:
         model.set_header("Opening", "Sicilian")
     with pytest.raises(ValueError, match="Result"):
         model.set_header("Result", "White wins")
+
+
+def test_captured_material_tracks_both_players_and_navigation() -> None:
+    """Captured pieces and totals should describe the displayed position."""
+    model = GameModel()
+    for source, destination in (
+        ("e2", "e4"),
+        ("d7", "d5"),
+        ("e4", "d5"),
+        ("d8", "d5"),
+    ):
+        play(model, source, destination)
+
+    white = model.captured_material(chess.WHITE)
+    black = model.captured_material(chess.BLACK)
+    assert white.pieces == (chess.Piece(chess.PAWN, chess.BLACK),)
+    assert white.points == 1
+    assert black.pieces == (chess.Piece(chess.PAWN, chess.WHITE),)
+    assert black.points == 1
+
+    model.navigate_to(2)
+    assert model.captured_material(chess.WHITE).points == 0
+    assert model.captured_material(chess.BLACK).points == 0
+
+
+def test_captured_material_handles_en_passant_and_promotion_capture() -> None:
+    """Special captures should record the piece removed from its actual square."""
+    en_passant_game = GameModel()
+    for source, destination in (
+        ("e2", "e4"),
+        ("a7", "a6"),
+        ("e4", "e5"),
+        ("d7", "d5"),
+        ("e5", "d6"),
+    ):
+        play(en_passant_game, source, destination)
+    en_passant = en_passant_game.captured_material(chess.WHITE)
+    assert en_passant.pieces == (chess.Piece(chess.PAWN, chess.BLACK),)
+    assert en_passant.points == 1
+
+    promotion_game = GameModel()
+    for source, destination in (
+        ("a2", "a4"),
+        ("h7", "h5"),
+        ("a4", "a5"),
+        ("h5", "h4"),
+        ("a5", "a6"),
+        ("h4", "h3"),
+        ("a6", "b7"),
+        ("h3", "g2"),
+    ):
+        play(promotion_game, source, destination)
+    promotion_game.add_move(chess.B7, chess.A8, chess.QUEEN)
+    promotion_capture = promotion_game.captured_material(chess.WHITE)
+    assert promotion_capture.pieces == (
+        chess.Piece(chess.ROOK, chess.BLACK),
+        chess.Piece(chess.PAWN, chess.BLACK),
+    )
+    assert promotion_capture.points == 6
+
+
+def test_clear_resets_moves_and_editable_metadata() -> None:
+    """Clear should restore a game completely while reporting real changes."""
+    model = GameModel()
+    assert not model.has_resettable_content
+    assert not model.clear()
+
+    model.set_header("White", "Alice")
+    assert model.has_resettable_content
+    assert model.clear()
+    assert dict(model.headers) == PGN_METADATA_DEFAULTS
+    assert not model.has_moves
+    assert not model.has_resettable_content
+
+    play(model, "e2", "e4")
+    assert model.clear()
+    assert model.board == chess.Board()
+    assert model.displayed_ply == 0
+
+    game_with_extra_metadata = chess.pgn.Game()
+    game_with_extra_metadata.headers["Annotator"] = "Example"
+    model = GameModel(game_with_extra_metadata)
+    assert model.clear()
+    assert dict(model.headers) == PGN_METADATA_DEFAULTS
