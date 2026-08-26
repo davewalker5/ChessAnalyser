@@ -33,8 +33,9 @@ LEGAL_MOVE_MARKER = "#35d4d0"
 BLACK_PIECE = "#151515"
 WHITE_PIECE = "#f7f7f7"
 WHITE_PIECE_OUTLINE = "#303030"
-BOARD_MARGIN = 28
+BOARD_MARGIN = 44
 MINIMUM_BOARD_SIZE = 320
+RIGHT_PANEL_WIDTH = 380
 DEFAULT_PLAYBACK_SECONDS = 1.0
 MINIMUM_PLAYBACK_SECONDS = 0.25
 MAXIMUM_PLAYBACK_SECONDS = 5.0
@@ -65,11 +66,8 @@ class PgnEditor(tk.Tk):
         self.playback_seconds = tk.DoubleVar(value=DEFAULT_PLAYBACK_SECONDS)
         self.board_pixels = MINIMUM_BOARD_SIZE
         self.title("PGN Editor")
-        self.minsize(760, 500)
-        # The two-panel layout is naturally wide. A taller default window makes
-        # the square board width-constrained and creates large empty bands above
-        # and below both panels.
-        self.geometry("1000x580")
+        self.minsize(900, 600)
+        self.geometry("1120x700")
         self.configure(background=APP_BACKGROUND)
         self._configure_styles()
         self._create_menu()
@@ -243,6 +241,10 @@ class PgnEditor(tk.Tk):
         }
         menu = tk.Menu(self, **menu_options)
         file_menu = tk.Menu(menu, tearoff=False, **menu_options)
+        file_menu.add_command(
+            label="New Game", accelerator="Ctrl+N", command=self._new_game
+        )
+        file_menu.add_separator()
         file_menu.add_command(label="Open…", accelerator="Ctrl+O", command=self._open)
         file_menu.add_command(label="Save", accelerator="Ctrl+S", command=self._save)
         file_menu.add_command(
@@ -262,8 +264,8 @@ class PgnEditor(tk.Tk):
         """Create the two-panel editor layout and controls."""
         container = ttk.Frame(self, padding=(18, 7))
         container.pack(fill=tk.BOTH, expand=True)
-        container.columnconfigure(0, weight=3)
-        container.columnconfigure(1, weight=2, minsize=260)
+        container.columnconfigure(0, weight=1)
+        container.columnconfigure(1, weight=0, minsize=RIGHT_PANEL_WIDTH)
         container.rowconfigure(0, weight=1)
 
         board_frame = ttk.Frame(container)
@@ -278,7 +280,9 @@ class PgnEditor(tk.Tk):
         self.canvas.bind("<ButtonRelease-1>", self._drag_end)
 
         self.panel = ttk.Frame(container, style="Panel.TFrame", padding=20)
-        self.panel.grid(row=0, column=1, sticky="ew")
+        self.panel.grid(row=0, column=1, sticky="nsew")
+        # Keep the controls from widening the panel as the main window grows.
+        # The board receives all additional horizontal space.
         self.panel.grid_propagate(False)
         self.panel.rowconfigure(2, weight=1)
         self.panel.columnconfigure(0, weight=1)
@@ -472,6 +476,7 @@ class PgnEditor(tk.Tk):
 
     def _bind_shortcuts(self) -> None:
         """Bind common platform-neutral keyboard shortcuts."""
+        self.bind_all("<Control-n>", self._new_game_shortcut)
         self.bind_all("<Control-o>", lambda event: self._open())
         self.bind_all("<Control-s>", lambda event: self._save())
         self.bind_all("<Control-Shift-S>", lambda event: self._save_as())
@@ -501,9 +506,6 @@ class PgnEditor(tk.Tk):
         self.board_pixels = max(min(width, height) - 2 * BOARD_MARGIN, 8)
         self.board_x = (width - self.board_pixels) / 2
         self.board_y = (height - self.board_pixels) / 2
-        if hasattr(self, "panel"):
-            labelled_board_height = min(height, self.board_pixels + 2 * BOARD_MARGIN)
-            self.panel.configure(height=int(labelled_board_height))
         square_size = self.board_pixels / 8
         files = "ABCDEFGH" if self.white_at_bottom else "HGFEDCBA"
         ranks = "87654321" if self.white_at_bottom else "12345678"
@@ -614,6 +616,44 @@ class PgnEditor(tk.Tk):
                 fill=MUTED_TEXT,
                 font=coordinate_font,
             )
+        self._draw_captured_material()
+
+    def _draw_captured_material(self) -> None:
+        """Draw each player's captured material beside their board edge."""
+        top_color = chess.BLACK if self.white_at_bottom else chess.WHITE
+        bottom_color = not top_color
+        self._draw_material_summary(top_color, self.board_y - 31)
+        self._draw_material_summary(bottom_color, self.board_y + self.board_pixels + 31)
+
+    def _draw_material_summary(self, capturing_color: chess.Color, y: float) -> None:
+        """Draw one compact captured-material summary at a vertical position."""
+        material = self.model.captured_material(capturing_color)
+        icons = " ".join(PIECE_GLYPHS[piece.piece_type] for piece in material.pieces)
+        player = "White" if capturing_color == chess.WHITE else "Black"
+        text = f"{player}  {icons}  {material.points}" if icons else f"{player}  0"
+        captured_color = not capturing_color
+        background = DARK_SQUARE if captured_color == chess.WHITE else LIGHT_SQUARE
+        foreground = WHITE_PIECE if captured_color == chess.WHITE else BLACK_PIECE
+        text_item = self.canvas.create_text(
+            self.board_x + self.board_pixels / 2,
+            y,
+            text=text,
+            fill=foreground,
+            font=("Arial", 12, "bold"),
+        )
+        bounds = self.canvas.bbox(text_item)
+        if bounds is not None:
+            padding_x = 8
+            padding_y = 3
+            background_item = self.canvas.create_rectangle(
+                bounds[0] - padding_x,
+                bounds[1] - padding_y,
+                bounds[2] + padding_x,
+                bounds[3] + padding_y,
+                fill=background,
+                outline="",
+            )
+            self.canvas.tag_lower(background_item, text_item)
 
     def _display_to_square(self, display_file: int, display_rank: int) -> chess.Square:
         """Convert a displayed row and column to a python-chess square."""
@@ -700,11 +740,15 @@ class PgnEditor(tk.Tk):
                 self.bell()
                 self._refresh()
                 return
+            self.dirty = True
+            self.metadata_variables["Result"].set(self.model.headers["Result"])
+            self.status.configure(text=self.model.game_over_message or f"Added {san}")
         except MoveRejectedError as error:
             self.status.configure(text=str(error))
             self.bell()
         else:
             self.dirty = True
+            self.metadata_variables["Result"].set(self.model.headers["Result"])
             self.status.configure(text=self.model.game_over_message or f"Added {san}")
         self._refresh()
 
@@ -757,9 +801,12 @@ class PgnEditor(tk.Tk):
         self.pause_button.configure(
             state=tk.NORMAL if self.playback_after_id is not None else tk.DISABLED
         )
-        state = tk.NORMAL if self.model.has_moves else tk.DISABLED
-        self.undo_button.configure(state=state)
-        self.clear_button.configure(state=state)
+        self.undo_button.configure(
+            state=tk.NORMAL if self.model.has_moves else tk.DISABLED
+        )
+        self.clear_button.configure(
+            state=tk.NORMAL if self.model.has_resettable_content else tk.DISABLED
+        )
         name = self.current_path.name if self.current_path else "Untitled.pgn"
         marker = " *" if self.dirty else ""
         self.title(f"{name}{marker} — PGN Editor")
@@ -928,26 +975,48 @@ class PgnEditor(tk.Tk):
         self._stop_playback()
         if self.model.undo():
             self.dirty = True
+            self.metadata_variables["Result"].set(self.model.headers["Result"])
             self.status.configure(text="Last move removed")
             self._refresh()
 
     def _clear(self) -> None:
-        """Confirm and clear the current game's moves."""
+        """Confirm and clear the current game's moves and editable metadata."""
         self._stop_playback()
-        if not self.model.has_moves:
+        self._commit_all_metadata()
+        if not self.model.has_resettable_content:
             return
         answer = show_dialog(
             self,
             "Clear game",
-            "Remove all moves from this game?",
+            "Reset all moves and game details?",
             (("Clear game", "clear"), ("Cancel", "cancel")),
             default="cancel",
         )
         if answer != "clear":
             return
         self.model.clear()
+        self._load_metadata_fields()
         self.dirty = True
         self.status.configure(text="Game cleared")
+        self._refresh()
+
+    def _new_game_shortcut(self, event: tk.Event[tk.Misc]) -> str:
+        """Start a new game from the keyboard and stop event propagation."""
+        del event
+        self._new_game()
+        return "break"
+
+    def _new_game(self) -> None:
+        """Create a clean untitled game after resolving unsaved changes."""
+        self._stop_playback()
+        self._commit_all_metadata()
+        if not self._may_discard_changes():
+            return
+        self.model = GameModel()
+        self.current_path = None
+        self.dirty = False
+        self._load_metadata_fields()
+        self.status.configure(text="New game")
         self._refresh()
 
     def _flip(self) -> None:

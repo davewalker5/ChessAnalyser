@@ -33,6 +33,88 @@ The editor window contains two main panels:
 * The right panel contains the SAN move list, navigation and playback
   controls, editing controls and a status message.
 
+Compact material summaries sit above and below the board beside the corresponding
+player. With White at the bottom, Black's captures are shown above the board and
+White's captures below it; flipping the board reverses their positions. Each
+summary shows the captured pieces and their total conventional value: pawn 1,
+knight 3, bishop 3, rook 5 and queen 9. The summaries follow the currently
+displayed position, so they change when navigating or replaying a game.
+
+
+Editing Game Details
+--------------------
+
+The **Game Details** panel above the move list edits the seven standard PGN header fields. Values loaded from a PGN file are displayed automatically and are retained when the game is saved.
+
+.. list-table:: PGN game details
+   :header-rows: 1
+   :widths: 20 55 25
+
+   * - Field
+     - Description
+     - Default value
+   * - ``Event``
+     - Name of the tournament, match or event
+     - ``Unknown``
+   * - ``Site``
+     - Location at which the game was played
+     - ``?``
+   * - ``Date``
+     - Date of the game in PGN ``YYYY.MM.DD`` format
+     - ``????.??.??``
+   * - ``Round``
+     - Round number or identifier within the event
+     - ``?``
+   * - ``White``
+     - Name of the player with the White pieces
+     - ``?``
+   * - ``Black``
+     - Name of the player with the Black pieces
+     - ``?``
+   * - ``Result``
+     - Recorded result of the game
+     - ``*``
+
+Enter a value in a text field and then press ``Enter`` or move focus to another control to apply it. Leaving a text field blank restores the default shown above. Editing any game detail marks the document as having unsaved changes, indicated by an asterisk in the window title.
+
+
+Selecting a Date
+~~~~~~~~~~~~~~~~
+
+Select the calendar button beside ``Date`` to open the date picker. Use the left and right arrow buttons to change month, select a numbered day, or select ``Today``. The chosen date is stored in PGN ``YYYY.MM.DD`` format.
+
+The Date field remains directly editable because PGN supports unknown and partial dates. For example, ``2026.??.??`` records a known year with an unknown month and day. Clearing the field restores ``????.??.??``.
+
+
+Selecting a Result
+~~~~~~~~~~~~~~~~~~
+
+Select the game result from the available PGN values:
+
+``*``
+    The game is unfinished or its result is unknown.
+
+``1-0``
+    White won.
+
+``0-1``
+    Black won.
+
+``1/2-1/2``
+    The game was drawn.
+
+The editor sets Result automatically when a move ends the game: ``1-0`` or
+``0-1`` after checkmate, and ``1/2-1/2`` after a draw recognised by
+``python-chess``. Undoing that final move resets Result to ``*``. The field can
+still be selected manually when recording a result that is not determined by
+the position, such as resignation or an agreed draw.
+
+
+Saving and Loading Details
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Game details are written as PGN header tags when the game is saved. Opening a PGN file populates the editor with the first game's existing header values. Missing or blank supported fields receive the defaults shown above. A failed load or save leaves the current metadata and game unchanged.
+
 
 Entering Moves
 --------------
@@ -73,12 +155,27 @@ The editing controls are:
     Removes the final recorded move and displays the new final position. Undo can be repeated until the starting position is reached.
 
 ``Clear``
-    Removes every move and restores the standard starting position. The editor asks for confirmation before clearing a game containing moves.
+    Removes every move, restores the standard starting position and resets all
+    editable game details to their defaults. The current filename is retained,
+    and the editor asks for confirmation before resetting moves or non-default
+    details.
 
 ``Flip``
     Alternates between White-at-bottom and Black-at-bottom orientations. The pieces and board coordinates are reversed without changing the position or move history.
 
 Entering, undoing or clearing moves marks the game as changed. An asterisk in the window title identifies a game with unsaved changes.
+
+
+Starting a New Game
+-------------------
+
+Choose **File > New Game**, or press ``Ctrl+N``, to create a clean, untitled
+game. This resets the board, moves, captured-material totals and game details,
+and removes the current filename. A later Save therefore asks for a destination.
+
+If the current game has unsaved changes, the editor asks whether to save,
+discard or cancel. A cancelled or unsuccessful save leaves the existing game
+and filename unchanged.
 
 
 Navigating Through a Game
