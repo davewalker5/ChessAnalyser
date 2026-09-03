@@ -12,13 +12,13 @@ MAX_LINE_LENGTH = 120
 
 def export_pgn(options):
     """
-    Export a PGN file including analysis results
+    Export a PGN file, optionally including analysis results
 
     :param options: Dictionary of export options
     """
 
     # Check the required options have been supplied
-    check_required_options(options, [OPT_REFERENCE, OPT_ENGINE, OPT_PGN], CHECK_FOR_ALL)
+    check_required_options(options, [OPT_REFERENCE, OPT_PGN], CHECK_FOR_ALL)
 
     if options[OPT_VERBOSE]:
         print(f"\nExporting annotated PGN\n")
@@ -44,20 +44,22 @@ def export_pgn(options):
     result = result_list[0] if result_list else "*"
 
     # Create an initial score object and get the initial evaluation
-    initial_score_object = chess.engine.PovScore(chess.engine.Cp(INITIAL_SCORE), chess.WHITE)
-    _, initial_evaluation = calculate_normalised_score(initial_score_object, WHITE)
+    include_evalutions = options[OPT_ENGINE] is not None
+    if include_evalutions:
+        initial_score_object = chess.engine.PovScore(chess.engine.Cp(INITIAL_SCORE), chess.WHITE)
+        _, initial_evaluation = calculate_normalised_score(initial_score_object, WHITE)
 
-    # Get a list of evaluations and annotations, one per move, for the specified engine
-    if options[OPT_VERBOSE]:
-        print("Compiling move annotations and evaluations ...")
+        # Get a list of evaluations and annotations, one per move, for the specified engine
+        if options[OPT_VERBOSE]:
+            print("Compiling move annotations and evaluations ...")
 
-    evaluations = []
-    annotations = []
-    analysis_engine_id = get_analysis_engine_id(options[OPT_ENGINE])
-    for i, move in enumerate(game.moves):
-        move_analysis = [a for a in move.analyses if a.analysis_engine_id == analysis_engine_id][0]
-        evaluations.append(move_analysis.evaluation)
-        annotations.append(move_analysis.annotation)
+        evaluations = []
+        annotations = []
+        analysis_engine_id = get_analysis_engine_id(options[OPT_ENGINE])
+        for i, move in enumerate(game.moves):
+            move_analysis = [a for a in move.analyses if a.analysis_engine_id == analysis_engine_id][0]
+            evaluations.append(move_analysis.evaluation)
+            annotations.append(move_analysis.annotation)
 
     # Open the PGN file
     if options[OPT_VERBOSE]:
@@ -72,19 +74,24 @@ def export_pgn(options):
 
         # The first evaluation is for the position before white's first move, and is written at the
         # head of the move list
-        line = f"{{[%eval {initial_evaluation}]}} "
+        line = f"{{[%eval {initial_evaluation}]}} " if include_evalutions else ""
 
         # Iterate over the halfmoves
         for i, move in enumerate(game.moves):
             # Format the evaluation string for this halfmove
-            evaluation = f"{{[%eval {evaluations[i]}]}}" if evaluations[i] else ""
+            if include_evalutions:
+                evaluation = f"{{[%eval {evaluations[i]}]}}" if evaluations[i] else ""
+                annotation = f"{annotations[i]} "
+            else:
+                evaluation = ""
+                annotation = ""
 
             # Format the move text based on which player has the current turn
             player = get_player_for_halfmove(i + 1)
             if player == WHITE:
-                move_text = f"{1 + i // 2}. {move.san}{annotations[i]} {evaluation} "
+                move_text = f"{1 + i // 2}. {move.san}{annotation}{evaluation} "
             else:
-                move_text = f"{move.san}{annotations[i]} {evaluation} "
+                move_text = f"{move.san}{annotation}{evaluation} "
 
             # Wrap text when we reach the line length limit
             if (len(line) + len(move_text)) > MAX_LINE_LENGTH:
