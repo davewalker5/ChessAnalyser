@@ -14,7 +14,7 @@ authors = [
 ]
 dependencies = [
     "alembic==1.16.4",
-    "CairoSVG==2.9.0",
+    "CairoSVG==2.9.1",
     "matplotlib==3.11.0",
     "moviepy==1.0.3",
     "pandas==2.3.1",
